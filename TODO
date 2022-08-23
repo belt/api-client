@@ -1,0 +1,6 @@
+connection pooling
+JWT token caching, parsing
+fix logging: stdout/stderr and Logger vs Rails.logger
+newrelic
+splunk
+stretch: aws cognito
