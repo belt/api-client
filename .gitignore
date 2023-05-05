@@ -1,0 +1,42 @@
+# npm
+client/node_modules/
+client/dist/
+client/yarn.lock
+client/yarn*.log
+client/coverage
+
+# Bundler/Ore
+Gemfile.lock
+vendor/bundle/
+.bundle/
+.ore/
+log/*.log
+pkg/
+test/dummy/db/*.sqlite3
+test/dummy/db/*.sqlite3-journal
+test/dummy/db/*.sqlite3-*
+test/dummy/log/*.log
+test/dummy/storage/
+test/dummy/tmp/
+test/dummy/.byebug_history
+test/dummy/node_modules
+test/dummy/public/packs
+test/dummy/public/assets
+test/dummy/config/credentials
+spec/examples.txt
+spec/support/dummy/log/*.log
+spec/support/dummy/tmp/
+spec/support/dummy/storage/
+
+# Coverage
+coverage/
+tmp/coverage/
+
+# RubyCritic reports
+tmp/rubycritic/
+
+# Personal
+TODO
+
+# Manifest artifacts
+manifest.json
