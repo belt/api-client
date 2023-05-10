@@ -1,0 +1,44 @@
+# Project-scoped tool versions — managed by mise
+# Ruby stays in .tool-versions for Bundler compatibility (Gemfile reads it)
+#
+# Install: mise install
+# Verify:  mise ls
+
+[tools]
+# ─── Language Runtime ───────────────────────────────────────────────────
+ruby = "3.4.8"
+
+# ─── Linters & Formatters ──────────────────────────────────────────────
+shellcheck = "0.11.0"
+shfmt = "3.12.0"
+
+# ─── Data Processing ───────────────────────────────────────────────────
+"asdf:mise-plugins/asdf-jq" = "1.8.1"
+
+# mikefarah/yq — use system-installed binary (e.g. Homebrew, Docker image)
+"ubi:mikefarah/yq" = "path:/usr/local/bin/yq"
+
+# ─── Testing ────────────────────────────────────────────────────────────
+shellspec = "0.28.1"
+
+[env]
+# freeze string literals by default
+RUBYOPT = "--enable=frozen-string-literal"
+
+# freeze string literals by default with debugging
+# RUBYOPT='--enable=frozen-string-literal --debug=frozen-string-literal'
+
+# JIT enabled programmatically after gem loading in application/test boot.
+# See: spec/spec_helper.rb and lib/api_client/jit.rb
+# RUBY_YJIT_ENABLE=1
+
+# Rugged (libgit2) native extension build flags
+# These env vars are read by rugged's ext/rugged/extconf.rb during compilation.
+# CC: bypass sccache which breaks CMake compiler detection
+# CFLAGS: -O3 already default in extconf.rb; -march=native tunes for local CPU
+# CMAKE_FLAGS: enable SHA-256, Release build, force Makefiles (Ninja/gmake mismatch)
+# export CC=/usr/bin/gcc
+# export CPP=/usr/bin/g++
+# export CFLAGS="..."
+# export CMAKE_FLAGS="..."
+
