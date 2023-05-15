@@ -1,0 +1,129 @@
+# Extended configuration for Standard Ruby
+# Referenced via extend_config in .standard.yml
+---
+# Disable frozen_string_literal enforcement - project policy
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: never
+
+# ThreadSafety exceptions for intentional singleton patterns
+# Note: These files use proper mutex synchronization but RuboCop's static
+# analysis cannot verify runtime thread safety, so exclusions remain.
+ThreadSafety/ClassInstanceVariable:
+  Exclude:
+    # Global configuration singleton with @configuration_mutex - intentional design
+    - "lib/api_client.rb"
+    # Circuit breaker with @error_notifier_mutex - intentional design
+    - "lib/api_client/circuit.rb"
+    # Profiling module uses class instance variables for auto-profile config
+    - "lib/api_client/profiling.rb"
+    # Adapter registry singleton with mutex protection
+    - "lib/api_client/adapters/registry.rb"
+    # Processing registry singleton with mutex protection
+    - "lib/api_client/processing/registry.rb"
+    # JWT auditor memoization with mutex protection
+    - "lib/api_client/jwt/auditor.rb"
+    # Ractor processor global pool with mutex protection
+    - "lib/api_client/processing/ractor_processor.rb"
+
+ThreadSafety/ClassAndModuleAttributes:
+  Exclude:
+    # Test server holder - test infrastructure only
+    - "spec/support/**/*"
+
+ThreadSafety/NewThread:
+  Exclude:
+    # Concurrency tests intentionally test thread behavior
+    - "spec/fuzz/concurrency_spec.rb"
+
+# RSpec configuration for integration/fuzz tests
+RSpec/DescribeClass:
+  Exclude:
+    # Integration, fuzz, and benchmark tests describe behavior, not classes
+    - "spec/integration/**/*"
+    - "spec/fuzz/**/*"
+    - "spec/hardening/**/*"
+    - "spec/benchmarks/**/*"
+    # Error specs describe error module behavior
+    - "spec/lib/api_client/jwt/errors_spec.rb"
+    # Processor specs describe processing behavior
+    - "spec/lib/api_client/processing/async_processor_spec.rb"
+    - "spec/lib/api_client/processing/concurrent_processor_spec.rb"
+    - "spec/lib/api_client/processing/ractor_processor_spec.rb"
+
+RSpec/ExampleLength:
+  Max: 15
+  Exclude:
+    - "spec/integration/**/*"
+    - "spec/hardening/**/*"
+    - "spec/benchmarks/**/*"
+    - "spec/lib/api_client/execution/**/*"
+    - "spec/lib/api_client/circuit_spec.rb"
+    - "spec/support/shared_examples/**/*"
+    # JWT specs have complex setup
+    - "spec/lib/api_client/jwt/**/*"
+    # Processing specs test complex behavior
+    - "spec/lib/api_client/processing/**/*"
+    # Adapter specs test instrumentation
+    - "spec/lib/api_client/adapters/**/*"
+
+RSpec/MultipleExpectations:
+  Max: 5
+  Exclude:
+    - "spec/integration/**/*"
+    - "spec/benchmarks/**/*"
+    - "spec/hardening/**/*"
+    - "spec/lib/api_client/execution/**/*"
+    - "spec/lib/api_client/circuit_spec.rb"
+    - "spec/support/shared_examples/**/*"
+    # JWT specs verify multiple token properties
+    - "spec/lib/api_client/jwt/**/*"
+    # Processing specs verify results and errors
+    - "spec/lib/api_client/processing/**/*"
+    # HTTP verb specs verify request/response pairs
+    - "spec/lib/api_client/http_verbs_spec.rb"
+    # Adapter specs verify response properties
+    - "spec/lib/api_client/adapters/**/*"
+    # Module specs verify multiple behaviors
+    - "spec/lib/api_client/api_client_module_spec.rb"
+    # Registry specs verify registration state
+    - "spec/lib/api_client/request_flow/**/*"
+    # Railtie specs verify Rails integration
+    - "spec/lib/api_client/railtie_spec.rb"
+    # Null circuit specs verify fallback behavior
+    - "spec/lib/api_client/null_circuit_spec.rb"
+
+# Benchmark specs measure performance, not assertions
+RSpec/NoExpectationExample:
+  Exclude:
+    - "spec/benchmarks/**/*"
+
+# Processor specs have multiple describe blocks for different error classes
+RSpec/MultipleDescribes:
+  Exclude:
+    - "spec/lib/api_client/execution/ractor_processor_spec.rb"
+    - "spec/lib/api_client/processing/async_processor_spec.rb"
+    - "spec/lib/api_client/processing/concurrent_processor_spec.rb"
+    - "spec/lib/api_client/processing/ractor_processor_spec.rb"
+
+# Nested groups for HTTP verb testing
+RSpec/NestedGroups:
+  Max: 4
+  Exclude:
+    - "spec/lib/api_client/base_spec.rb"
+
+# Context wording for filtering tests
+RSpec/ContextWording:
+  Exclude:
+    - "spec/lib/api_client/jwt/jwks_client_spec.rb"
+
+# Verified doubles not always possible for external gems
+RSpec/VerifiedDoubles:
+  Exclude:
+    - "spec/lib/api_client/null_circuit_spec.rb"
+
+# Coverage output is intentional
+RSpec/Output:
+  Exclude:
+    - "spec/support/coverage_config.rb"
+    - "spec/lib/api_client/null_circuit_spec.rb"

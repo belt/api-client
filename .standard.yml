@@ -1,0 +1,67 @@
+# Standard Ruby configuration
+# https://github.com/standardrb/standard
+---
+fix: false
+parallel: true
+
+# Extended configuration for exclusions
+extend_config:
+  - .rubocop.yml
+
+# Plugins extend Standard with additional cops
+# https://github.com/standardrb/standard#plugins
+plugins:
+  # RSpec linting (rubocop-rspec wrapper)
+  # https://github.com/shilin-anton/standard-rspec
+  - standard-rspec:
+      require_path: standard/rspec/plugin
+      plugin_class_name: Standard::Rspec::Plugin
+
+  # Thread-safety:
+  #   Detect class/module attributes, class instance variables,
+  #   Dir.chdir, mutable class instance variables, Thread.new,
+  #   Rack middleware instance variables
+  #
+  # Normally we'd use:
+  # - standard-thread_safety
+  #
+  # ... but it throws config warnings. RuboCop 1.72+ supports lint_roller natively:
+  #   https://github.com/rubocop/rubocop-thread_safety
+  - rubocop-thread_safety
+
+  # Performance cops (hash.keys.include? → hash.key?, etc.)
+  # https://docs.rubocop.org/rubocop-performance/
+  - rubocop-performance
+
+ignore:
+  - "spec/support/dummy/**/*"
+  - "vendor/**/*"
+  # Fuzz tests have complex concurrency examples that legitimately need more lines
+  - "spec/fuzz/**/*"
+  # Benchmark/hardening specs test behavior and performance, not classes
+  - "spec/benchmarks/**/*"
+  - "spec/hardening/**/*"
+  # Execution and circuit specs have complex multi-assertion tests
+  - "spec/lib/api_client/execution/**/*"
+  - "spec/lib/api_client/circuit_spec.rb"
+  - "spec/support/shared_examples/**/*"
+  # JWT specs have complex setup and multiple assertions per test
+  - "spec/lib/api_client/jwt/**/*"
+  # Processing specs test complex parallel behavior
+  - "spec/lib/api_client/processing/**/*"
+  # HTTP verb specs verify request/response pairs
+  - "spec/lib/api_client/http_verbs_spec.rb"
+  # Adapter specs test instrumentation with multiple assertions
+  - "spec/lib/api_client/adapters/**/*"
+  # Module specs verify multiple behaviors
+  - "spec/lib/api_client/api_client_module_spec.rb"
+  # Registry specs verify registration state
+  - "spec/lib/api_client/request_flow/**/*"
+  # Railtie specs verify Rails integration
+  - "spec/lib/api_client/railtie_spec.rb"
+  # Null circuit specs verify fallback behavior
+  - "spec/lib/api_client/null_circuit_spec.rb"
+  # Base spec has nested HTTP verb tests
+  - "spec/lib/api_client/base_spec.rb"
+  # Coverage config outputs summary (intentional)
+  - "spec/support/coverage_config.rb"
