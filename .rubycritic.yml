@@ -1,0 +1,23 @@
+# RubyCritic configuration
+# Combines flog (complexity), flay (duplication), reek (smells)
+# Run: bundle exec rubycritic lib/
+#
+# Sync excludes with: config/production_scope.rb (canonical source)
+
+paths:
+  - lib/
+
+# Exclude non-production code
+exclude_paths:
+  - lib/api_client/examples/
+
+# Minimum score threshold (A=100, B=80, C=60, D=40, F=0)
+minimum_score: 60
+
+# Output directory for HTML reports
+output_directory: tmp/rubycritic
+
+# Suppress specific smells (use sparingly)
+# suppressions:
+#   - smell: TooManyStatements
+#     file: lib/api_client/base.rb
