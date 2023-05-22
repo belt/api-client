@@ -1,0 +1,19 @@
+# Ore Light configuration
+# https://github.com/contriboss/ore-light
+
+[sources]
+primary = "https://rubygems.org"
+
+[install]
+# Force macOS ARM platform
+# platform = "arm64-darwin"
+
+# Install gems to vendor/bundle for isolation (optional)
+# vendor_dir = "vendor/bundle"
+
+# Skip development/test gems in production
+# without = ["development", "test"]
+
+[cache]
+# Enable gem caching for faster installs
+enabled = true
