@@ -1,0 +1,79 @@
+# AmazingPrint configuration
+# Loaded automatically from ~/.aprc or project root
+# https://github.com/amazing-print/amazing_print
+#
+# Color accessibility notes:
+# - Avoid pure red on dark backgrounds (poor contrast)
+# - Use -ish variants for softer, more readable colors
+# - Consider colorblind users: don't rely on red/green distinction alone
+
+# Detect terminal background (heuristic: check common env vars)
+# Set TERMINAL_THEME=light or TERMINAL_THEME=dark to override
+light_theme = ENV.fetch("TERMINAL_THEME", "dark") != "dark"
+
+# High-contrast color scheme optimized for readability
+# Dark theme: lighter colors for visibility
+# Light theme: darker/saturated colors for contrast
+colors = if light_theme
+  {
+    args:       :gray,
+    array:      :gray,
+    bigdecimal: :blue,
+    class:      :purple,
+    date:       :green,
+    falseclass: :purple,     # avoid red/green for boolean distinction
+    integer:    :blue,
+    float:      :blue,
+    hash:       :gray,
+    keyword:    :cyan,
+    method:     :purple,
+    nilclass:   :purple,
+    rational:   :blue,
+    string:     :green,
+    struct:     :gray,
+    symbol:     :cyan,
+    time:       :green,
+    trueclass:  :blue,       # avoid red/green for boolean distinction
+    variable:   :cyan
+  }
+else
+  {
+    args:       :whiteish,
+    array:      :white,
+    bigdecimal: :cyanish,    # blue hard to read on dark
+    class:      :yellowish,
+    date:       :greenish,
+    falseclass: :purpleish,  # red hard to read on dark, purple distinct
+    integer:    :cyanish,
+    float:      :cyanish,
+    hash:       :white,
+    keyword:    :cyan,
+    method:     :purpleish,
+    nilclass:   :purpleish,  # red hard to read on dark
+    rational:   :cyanish,
+    string:     :greenish,   # yellow can be harsh
+    struct:     :whiteish,
+    symbol:     :yellowish,
+    time:       :greenish,
+    trueclass:  :green,
+    variable:   :cyanish
+  }
+end
+
+AmazingPrint.defaults = {
+  indent: 2,            # Compact indentation
+  index: true,          # Show array indices
+  html: false,          # ANSI colors (not HTML)
+  multiline: true,      # Multi-line output
+  sort_keys: true,      # Sort hash keys alphabetically
+  sort_vars: true,      # Sort instance variables
+  limit: 50,            # Limit large arrays/hashes
+  hash_format: :symbol, # Use symbol format for hash keys
+  object_id: false,     # Hide object IDs (cleaner output)
+  class_name: :class,   # Show class names
+  raw: false,           # Recursively format instance variables
+  color: colors
+}
+
+# Rails logger integration (if Rails is loaded)
+# AmazingPrint.defaults[:log_level] = :debug
