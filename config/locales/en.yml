@@ -1,0 +1,141 @@
+---
+en:
+  api_client:
+    errors:
+      circuit_open: "Circuit open for service: %{service}"
+      no_adapter: >-
+        No concurrency adapter available.
+        Install typhoeus, async, or concurrent-ruby.
+      ssrf_blocked: "SSRF blocked: %{reason} (%{uri})"
+      timeout: "Request timed out (%{timeout_type})"
+      processing: "%{count} items failed during %{processor_name} processing"
+      fan_out: "%{count} items failed during FanOut processing"
+
+    configuration:
+      positive_integer: >-
+        %{attribute} must be a positive Integer,
+        got %{value}
+      non_negative_integer: >-
+        %{attribute} must be a non-negative Integer,
+        got %{value}
+      positive_numeric: >-
+        %{attribute} must be a positive Numeric,
+        got %{value}
+      non_negative_numeric: >-
+        %{attribute} must be a non-negative Numeric,
+        got %{value}
+      positive_numeric_or_nil: >-
+        %{attribute} must be a positive Numeric or nil,
+        got %{value}
+      must_be_array: >-
+        %{attribute} must be an Array,
+        got %{value}
+      must_be_array_or_nil: >-
+        %{attribute} must be an Array or nil,
+        got %{value}
+      invalid_data_store: >-
+        data_store must be :memory or :redis,
+        got %{value}
+      pool_size_positive: "pool size must be a positive Integer, got %{value}"
+      pool_timeout_positive: >-
+        pool timeout must be a positive Numeric,
+        got %{value}
+
+    connection:
+      error_log: "ApiClient error: %{message}"
+      faraday_removed: >-
+        Direct Faraday access has been removed. Use with_faraday { |conn| ... } instead.
+
+    request_flow:
+      step_failed: "RequestFlow step %{index} (%{type}) failed: %{message}"
+      timeout: >-
+        RequestFlow exceeded %{timeout}s timeout
+        at step %{step_index} (elapsed: %{elapsed}s)
+      unknown_step: "Unknown request flow step: %{type}"
+
+    transforms:
+      unknown: "Unknown transform: %{transform}"
+
+    extractors:
+      unknown: "Unknown extractor: %{extract}"
+      invalid_type: "Extractor must be Symbol or Proc"
+
+    backend:
+      cannot_override_core: "Cannot override core backend: %{name}"
+      must_implement_execute: "Backend must implement #execute: %{klass}"
+      must_implement_config: "Backend must implement #config: %{klass}"
+      unknown: "Unknown backend: %{backend}"
+
+    interface:
+      must_implement: "%{klass} must implement #%{method_name}"
+
+    processing:
+      unknown_processor: "Unknown processor: %{processor}"
+      invalid_pool_option: "Invalid pool option: %{option}"
+      async_container_required: >-
+        async-container gem required for AsyncProcessor.
+        Add to Gemfile: gem 'async-container'
+      concurrent_ruby_required: >-
+        concurrent-ruby gem required for
+        ConcurrentProcessor.
+        Add to Gemfile: gem 'concurrent-ruby'
+      pool_shutdown: "Pool has been shutdown"
+
+    uri_policy:
+      unparseable: "unparseable URI"
+      malformed: "malformed URI"
+      blocked_scheme: "blocked scheme: %{scheme}"
+      path_traversal: "path traversal detected"
+      blocked_host: "blocked host: %{host}"
+      host_not_allowed: "host not in allowlist: %{host}"
+      blocked_network: "blocked network: %{network}"
+
+    base:
+      unknown_keys: >-
+        Unknown keys in options hash: %{keys}.
+        Expected %{expected} and/or :headers
+
+    fan_out:
+      invalid_requests_type: "requests must be an Array, got %{klass}"
+      invalid_request_item: >-
+        each request must be Hash-like
+        (respond to :fetch), got %{klass}
+      invalid_timeout: >-
+        timeout_ms must be a positive number,
+        got %{value}
+
+    registry:
+      unknown_entry: "Unknown %{entry_type}: %{key}"
+
+    jwt:
+      unavailable: >-
+        jwt gem not available.
+        Install with: gem 'jwt', '>= 2.7'
+      invalid_algorithm: "Invalid algorithm: %{algorithm}"
+      none_forbidden: "'none' algorithm is forbidden (RFC 8725)"
+      hmac_discouraged: >-
+        HMAC algorithms discouraged for API-to-API.
+        Use asymmetric (RS256, ES256).
+        Pass allow_hmac: true to override.
+      algorithm_not_allowed: >-
+        Algorithm '%{algorithm}' not in allowed
+        list: %{allowed}
+      unknown_algorithm_type: "Unknown algorithm type: %{algorithm}"
+      jwk_missing_fields: >-
+        %{label} JWK missing required fields:
+        %{fields}
+      jwk_kty_mismatch: >-
+        %{label} JWK kty must be '%{expected}',
+        got '%{actual}'
+      weak_secret: >-
+        HMAC secret must be at least %{minimum}
+        bytes (got %{actual})
+      cannot_convert_jwk: "Cannot convert %{klass} to JWK"
+      key_not_found: "Key '%{kid}' not found"
+      key_not_found_at_uri: >-
+        Key '%{kid}' not found in JWKS
+        at %{jwks_uri}
+      jwks_fetch_failed: >-
+        Failed to fetch JWKS from %{uri}
+        (status: %{status})
+      token_verification_failed: "Token verification failed"
