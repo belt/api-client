@@ -1,0 +1,149 @@
+---
+fr-FR:
+  api_client:
+    errors:
+      circuit_open: "Circuit ouvert pour le service : %{service}"
+      no_adapter: >-
+        Aucun adaptateur de concurrence disponible.
+        Installez typhoeus, async ou concurrent-ruby.
+      ssrf_blocked: "SSRF bloqué : %{reason} (%{uri})"
+      timeout: "Délai d'attente dépassé (%{timeout_type})"
+      processing: >-
+        %{count} éléments ont échoué pendant
+        le traitement %{processor_name}
+      fan_out: >-
+        %{count} éléments ont échoué pendant
+        le traitement FanOut
+
+    configuration:
+      positive_integer: >-
+        %{attribute} doit être un entier positif,
+        reçu %{value}
+      non_negative_integer: >-
+        %{attribute} doit être un entier positif
+        ou nul, reçu %{value}
+      pool_size_positive: >-
+        la taille du pool doit être un entier
+        positif, reçu %{value}
+      pool_timeout_positive: >-
+        le délai du pool doit être un nombre
+        positif, reçu %{value}
+
+    connection:
+      error_log: "Erreur ApiClient : %{message}"
+      faraday_removed: >-
+        L'accès direct à Faraday a été supprimé. Utilisez with_faraday { |conn| ... } à la place.
+
+    request_flow:
+      step_failed: >-
+        Étape RequestFlow %{index} (%{type})
+        a échoué : %{message}
+      timeout: >-
+        RequestFlow a dépassé le délai de %{timeout}s
+        à l'étape %{step_index}
+        (écoulé : %{elapsed}s)
+      unknown_step: "Étape de flux inconnue : %{type}"
+
+    transforms:
+      unknown: "Transformation inconnue : %{transform}"
+
+    extractors:
+      unknown: "Extracteur inconnu : %{extract}"
+      invalid_type: "L'extracteur doit être un Symbol ou un Proc"
+
+    backend:
+      cannot_override_core: >-
+        Impossible de remplacer le backend
+        principal : %{name}
+      must_implement_execute: >-
+        Le backend doit implémenter
+        #execute : %{klass}
+      must_implement_config: >-
+        Le backend doit implémenter
+        #config : %{klass}
+      unknown: "Backend inconnu : %{backend}"
+
+    interface:
+      must_implement: >-
+        %{klass} doit implémenter #%{method_name}
+
+    processing:
+      unknown_processor: "Processeur inconnu : %{processor}"
+      invalid_pool_option: >-
+        Option de pool invalide : %{option}
+      async_container_required: >-
+        Le gem async-container est requis pour
+        AsyncProcessor. Ajoutez au Gemfile :
+        gem 'async-container'
+      concurrent_ruby_required: >-
+        Le gem concurrent-ruby est requis pour
+        ConcurrentProcessor. Ajoutez au Gemfile :
+        gem 'concurrent-ruby'
+      pool_shutdown: "Le pool a été arrêté"
+
+    uri_policy:
+      unparseable: "URI non analysable"
+      malformed: "URI malformée"
+      blocked_scheme: "schéma bloqué : %{scheme}"
+      path_traversal: "traversée de chemin détectée"
+      blocked_host: "hôte bloqué : %{host}"
+      host_not_allowed: >-
+        hôte absent de la liste autorisée : %{host}
+      blocked_network: "réseau bloqué : %{network}"
+
+    base:
+      unknown_keys: >-
+        Clés inconnues dans le hash d'options :
+        %{keys}. Attendu %{expected} et/ou :headers
+
+    fan_out:
+      invalid_requests_type: >-
+        requests doit être un Array, reçu %{klass}
+      invalid_request_item: >-
+        chaque requête doit être de type Hash
+        (répondre à :fetch), reçu %{klass}
+      invalid_timeout: >-
+        timeout_ms doit être un nombre positif,
+        reçu %{value}
+
+    registry:
+      unknown_entry: "%{entry_type} inconnu : %{key}"
+
+    jwt:
+      unavailable: >-
+        Le gem jwt n'est pas disponible.
+        Installez avec : gem 'jwt', '>= 2.7'
+      invalid_algorithm: >-
+        Algorithme invalide : %{algorithm}
+      none_forbidden: >-
+        L'algorithme 'none' est interdit (RFC 8725)
+      hmac_discouraged: >-
+        Algorithmes HMAC déconseillés pour
+        API-à-API. Utilisez un algorithme
+        asymétrique (RS256, ES256).
+        Passez allow_hmac: true pour forcer.
+      algorithm_not_allowed: >-
+        L'algorithme '%{algorithm}' n'est pas dans
+        la liste autorisée : %{allowed}
+      unknown_algorithm_type: >-
+        Type d'algorithme inconnu : %{algorithm}
+      jwk_missing_fields: >-
+        %{label} JWK : champs requis
+        manquants : %{fields}
+      jwk_kty_mismatch: >-
+        %{label} JWK kty doit être '%{expected}',
+        reçu '%{actual}'
+      weak_secret: >-
+        Le secret HMAC doit faire au moins
+        %{minimum} octets (reçu %{actual})
+      cannot_convert_jwk: >-
+        Impossible de convertir %{klass} en JWK
+      key_not_found: "Clé '%{kid}' introuvable"
+      key_not_found_at_uri: >-
+        Clé '%{kid}' introuvable dans le JWKS
+        à %{jwks_uri}
+      jwks_fetch_failed: >-
+        Échec de récupération du JWKS depuis
+        %{uri} (statut : %{status})
+      token_verification_failed: >-
+        La vérification du jeton a échoué
