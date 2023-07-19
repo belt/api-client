@@ -1,0 +1,17 @@
+# Load the dummy Rails app for testing Rails integration
+ENV["RAILS_ENV"] ||= "test"
+require_relative "support/dummy/config/environment"
+
+require "rspec/rails"
+
+# require "support/rails_app/config/environment"
+# ActiveRecord::Migration.maintain_test_schema!
+
+# set up db
+# be sure to update the schema if required by doing
+# - cd spec/rails_app
+# - rake db:migrate
+# ActiveRecord::Schema.verbose = false
+# load "support/rails_app/db/schema.rb" # use db agnostic schema by default
+
+require "spec_helper"
