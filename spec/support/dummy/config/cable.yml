@@ -1,0 +1,6 @@
+---
+test:
+  adapter: test
+
+development:
+  adapter: async
