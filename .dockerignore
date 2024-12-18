@@ -1,0 +1,58 @@
+# =============================================================================
+# .dockerignore — keep build context small and secrets out of images
+#
+# Organized by category. Glob patterns reduce maintenance burden.
+# Review when adding new top-level files or directories.
+# =============================================================================
+
+# -- Version control ----------------------------------------------------------
+.git
+.gitignore
+
+# -- Docker (prevent recursive context) --------------------------------------
+.dockerignore
+Dockerfile*
+docker-compose*
+
+# -- IDE / editor -------------------------------------------------------------
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# -- CI / tooling config ------------------------------------------------------
+.kiro
+.pre-commit-config.yaml
+.ore.toml
+cspell.config.yaml
+Dangerfile
+
+# -- Shell / environment ------------------------------------------------------
+.aprc
+.envrc
+.env
+.env.*
+
+# -- Test artifacts (keep spec/ — development stage runs rspec) ---------------
+spec/examples.txt
+
+# -- Build artifacts / caches -------------------------------------------------
+coverage
+tmp
+rdoc
+pkg
+log
+vendor/bundle
+.bundle
+.ore
+
+# -- Dev binstubs (bundle exec used in container) -----------------------------
+bin/console
+bin/setup
+bin/docker-matrix-build
+
+# -- Misc ---------------------------------------------------------------------
+TODO
+CODE_OF_CONDUCT.md
+wip
