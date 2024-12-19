@@ -1,0 +1,144 @@
+#!/bin/sh
+
+# Health check for api-client container.
+# Validates the runtime environment without forking a Ruby process.
+# Exit 0 = healthy, exit 1 = unhealthy.
+# Failures emit JSON to stderr for structured log consumption.
+#
+# Strategy: checks are split into three tiers.
+#   1. Pure env var checks — zero I/O, run every time.
+#   2. Mutable stat checks — cheap, always run because volume mounts or
+#      bundle install in development can change the filesystem.
+#   3. Immutable checks — gated by a /tmp sentinel. These validate things
+#      baked into the image (jemalloc .so, tmpfs mount, ruby executes) that
+#      can't change during a container's lifetime.
+#
+# Checks run in priority order — cheapest/most-critical first:
+#   Always:
+#     1. check_jit_config      (env var comparison — no I/O)
+#     2. check_zjit_version    (parameter expansion — no I/O)
+#     3. check_ld_preload      (env var — warns if jemalloc not in LD_PRELOAD)
+#     4. check_core_library    (stat — may change in dev via volume mounts)
+#     5. check_ruby_binary     (PATH lookup — may change in dev)
+#     6. check_bundle_gems     (stat + glob — may change in dev)
+#   Cached (immutable at runtime — sentinel gated):
+#     7. check_tmpfs_writable  (write probe — tmpfs mount is fixed)
+#     8. check_jemalloc        (glob — .so is baked into the image)
+#     9. check_ruby_runtime    (forks ruby once — binary works or it doesn't)
+
+set -eu
+
+SENTINEL="/tmp/.healthcheck_ok"
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+fail() {
+  printf '{"status":"unhealthy","check":"%s","message":"%s"}\n' "$1" "$2" >&2
+  exit 1
+}
+
+warn() {
+  printf '{"status":"healthy","level":"warning","check":"%s","message":"%s"}\n' "$1" "$2" >&2
+}
+
+# ---------------------------------------------------------------------------
+# Pure checks (no I/O — always run)
+# ---------------------------------------------------------------------------
+
+check_jit_config() {
+  if [ "${RUBY_YJIT_ENABLE:-}" = "1" ] && [ "${RUBY_ZJIT_ENABLE:-}" = "1" ]; then
+    fail "jit_conflict" "RUBY_YJIT_ENABLE and RUBY_ZJIT_ENABLE are both set"
+  fi
+}
+
+check_zjit_version() {
+  [ "${RUBY_ZJIT_ENABLE:-}" = "1" ] || return 0
+  ruby_major="${RUBY_VERSION%%.*}"
+  [ "${ruby_major:-0}" -ge 4 ] \
+    || fail "zjit_version" "RUBY_ZJIT_ENABLE=1 requires Ruby >= 4.0 (found ${RUBY_VERSION:-unknown})"
+}
+
+check_ld_preload() {
+  case "${LD_PRELOAD:-}" in
+    *jemalloc*) return 0 ;;
+  esac
+  warn "ld_preload" "LD_PRELOAD does not contain jemalloc — using default allocator"
+}
+
+# ---------------------------------------------------------------------------
+# I/O checks (immutable at runtime — run once, then cached via sentinel)
+# ---------------------------------------------------------------------------
+
+check_core_library() {
+  [ -f /app/lib/api_client.rb ] \
+    || fail "core_library" "/app/lib/api_client.rb missing"
+}
+
+check_ruby_binary() {
+  command -v ruby > /dev/null 2>&1 \
+    || fail "ruby_binary" "ruby not found in PATH"
+}
+
+check_bundle_gems() {
+  bundle_path="${BUNDLE_PATH:-/usr/local/bundle}"
+  # Bundler nests gems under ruby/<abi_version>/gems (e.g. ruby/3.4.0/gems).
+  # Glob handles any Ruby ABI version without hard-coding.
+  gems_dir=""
+  for d in "${bundle_path}"/ruby/*/gems; do
+    [ -d "$d" ] && gems_dir="$d" && break
+  done
+  # Fall back to flat layout (BUNDLE_PATH/gems) for non-standard configs
+  [ -z "$gems_dir" ] && [ -d "${bundle_path}/gems" ] && gems_dir="${bundle_path}/gems"
+  [ -n "$gems_dir" ] \
+    || fail "bundle_gems" "no gems directory found under ${bundle_path}"
+  set -- "${gems_dir}"/*
+  [ -e "$1" ] \
+    || fail "bundle_gems" "${gems_dir} is empty"
+}
+
+check_tmpfs_writable() {
+  touch /tmp/.healthcheck_tmpfs_probe 2>/dev/null \
+    && rm -f /tmp/.healthcheck_tmpfs_probe \
+    || fail "tmpfs" "/tmp is not writable"
+}
+
+check_jemalloc() {
+  for f in /usr/lib/*/libjemalloc.so.2; do
+    [ -f "$f" ] && return 0
+  done
+  fail "jemalloc" "libjemalloc.so.2 not found"
+}
+
+check_ruby_runtime() {
+  ruby -e 'exit 0' 2>/dev/null \
+    || fail "ruby_runtime" "ruby failed to execute"
+}
+
+# ---------------------------------------------------------------------------
+# Run
+# ---------------------------------------------------------------------------
+
+# Pure env var checks — always run (zero cost)
+check_jit_config
+check_zjit_version
+check_ld_preload
+
+# Mutable checks — always run (cheap stats, may change in development
+# when volumes are mounted or gems are installed inside the container)
+check_core_library
+check_ruby_binary
+check_bundle_gems
+
+# Immutable checks — skip if sentinel exists (can't change at runtime:
+# jemalloc .so is in the image, tmpfs mount is fixed, ruby binary works
+# or it doesn't)
+if [ ! -f "$SENTINEL" ]; then
+  check_tmpfs_writable
+  check_jemalloc
+  check_ruby_runtime
+  touch "$SENTINEL" 2>/dev/null || true
+fi
+
+exit 0
