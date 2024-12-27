@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+# Bypasses `bundle exec` which hangs on Bundler 4.0.5 + Ruby 4.0.1.
+# Uses Bundler.setup directly instead of the broken `exec` code path.
+#
+# Usage: ruby bin/rspec [rspec args...]
+
+ENV["BUNDLE_GEMFILE"] ||= File.expand_path("../Gemfile", __dir__)
+
+require "bundler/setup"
+load Gem.bin_path("rspec-core", "rspec")
