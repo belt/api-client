@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Pre-push gate for main: CI parity checks.
+# Other branches push freely.
+# Bypass: git push --no-verify
+#
+# Gates:
+#   1. standardrb (lint)
+#   2. rspec (test suite)
+#   3. dockerfmt (Dockerfile lint)
+
+set -euo pipefail
+
+remote="$1"
+url="$2"
+
+gate_main=false
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "$remote_ref" in
+        refs/heads/main) gate_main=true ;;
+    esac
+done
+
+if [ "$gate_main" = false ]; then
+    exit 0
+fi
+
+echo '🔒 Pre-push gate: main branch checks...'
+echo ''
+
+failed=0
+
+run_check() {
+    local label="$1"
+    shift
+    echo -n "  $label... "
+    if "$@" > /dev/null 2>&1; then
+        echo '✓'
+    else
+        echo '✗'
+        failed=1
+    fi
+}
+
+# ── CI parity checks ──
+run_check 'standardrb' bundle exec standardrb --no-fix
+run_check 'rspec'      bundle exec rspec --format progress
+run_check 'dockerfmt'  dockerfmt --check Dockerfile
+
+echo ''
+if [ "$failed" -ne 0 ]; then
+    echo '❌ Pre-push gate FAILED.'
+    echo '   Bypass: git push --no-verify'
+    exit 1
+fi
+
+echo '✅ All checks passed.'

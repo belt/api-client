@@ -1,0 +1,65 @@
+# CI — lint, test in parallel.
+#
+# Actions pinned to full SHA for supply-chain safety.
+# Concurrency: cancel stale runs on same branch/PR.
+#
+# ruby/setup-ruby reads .tool-versions for ruby-version when
+# not specified. We override with matrix values for multi-version
+# testing. bundler-cache: true handles bundle install + caching.
+# Bundler version auto-detected from BUNDLED WITH in Gemfile.lock.
+---
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'spec/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'api-client.gemspec'
+      - '.github/workflows/ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'lib/**'
+      - 'spec/**'
+      - 'Gemfile'
+      - 'Gemfile.lock'
+      - 'api-client.gemspec'
+      - '.github/workflows/ci.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ruby/setup-ruby@4c56a21280b36d862b5fc31348f463d60bdc55d5 # v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+      - run: bundle exec standardrb --no-fix
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.2', '3.3', '3.4', '4.0']
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: ruby/setup-ruby@4c56a21280b36d862b5fc31348f463d60bdc55d5 # v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rspec
