@@ -1,0 +1,28 @@
+# Mutant configuration
+# Run with: bundle exec mutant run --use rspec -- 'ApiClient*'
+# Incremental: bundle exec mutant run --use rspec --since main -- 'ApiClient*'
+#
+# Mutant modifies code and checks if tests catch the changes.
+# Surviving mutations indicate weak tests or missing assertions.
+#
+# Sync excludes with: config/production_scope.rb (canonical source)
+---
+integration: rspec
+
+# Match patterns for subjects to mutate
+matcher:
+  subjects:
+    - "ApiClient*"
+  ignore:
+    - "ApiClient::VERSION"
+    - "ApiClient::Railtie*"
+    - "ApiClient::Examples*"
+
+# Parallel execution
+jobs: 6
+
+# Fail on first surviving mutation (faster feedback)
+fail_fast: false
+
+# For open source projects
+usage: opensource
