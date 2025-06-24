@@ -1,0 +1,36 @@
+// Blocked hostnames for SSRF prevention (non-configurable safety net).
+//
+// These DNS names are commonly targeted in SSRF attacks. IP-based
+// endpoints (169.254.169.254, 100.100.100.200, etc.) are covered
+// separately by config.blocked_networks.
+//
+// Sources:
+//   - https://swisskyrepo.github.io/PayloadsAllTheThings/Server%20Side%20Request%20Forgery/SSRF-Cloud-Instances/
+//   - https://gist.github.com/jhaddix/78cece26c91c6263653f31ba453e273b
+//
+// Content was rephrased for compliance with licensing restrictions.
+[
+  // --- GCP ---
+  "metadata.google.internal",
+  "metadata.goog",
+  "metadata",                              // GCP short alias
+
+  // --- AWS ---
+  "instance-data",                         // EC2 metadata DNS alias
+
+  // --- Azure ---
+  "management.azure.com",
+  "login.microsoftonline.com",
+
+  // --- Equinix Metal (formerly Packet) ---
+  "metadata.packet.net",
+
+  // --- Kubernetes ---
+  "kubernetes.default",
+  "kubernetes.default.svc",
+  "kubernetes.default.svc.cluster.local",
+
+  // --- Docker ---
+  "host.docker.internal",
+  "gateway.docker.internal"
+]
