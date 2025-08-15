@@ -1,0 +1,119 @@
+# Compose for api-client gem. Two profiles: production (minimal runtime)
+# and development (tooling + rspec). Build args sourced from env or defaults
+#
+# Usage:
+#   docker compose --profile production|development up
+#
+# Usage Apple Silicon:
+#   DOCKER_DEFAULT_PLATFORM=linux/arm64 \
+#   RUBY_VERSION=4.0.1 RUBY_ZJIT_ENABLE=1 RUBY_YJIT_ENABLE= \
+#     docker compose --profile development build
+---
+services:
+  production:
+    # platform: linux/arm64
+    platform: linux/amd64
+    build:
+      context: .
+      target: production
+      args:
+        RUBY_VERSION: "${RUBY_VERSION:-3.4.8}"
+        # YJIT/ZJIT are mutually exclusive; set one, blank the other
+        RUBY_YJIT_ENABLE: "${RUBY_YJIT_ENABLE:-1}"
+        RUBY_ZJIT_ENABLE: "${RUBY_ZJIT_ENABLE:-}"
+        BUILD_DATE: "${BUILD_DATE:-}"
+        APP_VERSION: "${APP_VERSION:-}"
+      platforms:
+        - linux/amd64
+        - linux/arm64
+      # Registry cache — no-op without a push-capable registry
+      cache_from:
+        - type=registry,ref=api-client:buildcache-production
+      cache_to:
+        - type=registry,ref=api-client:buildcache-production,mode=max
+    image: "api-client:production-ruby${RUBY_VERSION:-3.4.8}"
+    profiles:
+      - production
+    restart: unless-stopped
+    stop_grace_period: 15s
+    # Hardening: immutable root, drop all caps, no privilege escalation
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Shared memory default
+    shm_size: 64m
+    # Disable swap — predictable latency under memory pressure
+    mem_swappiness: 0
+    logging:
+      driver: json-file
+      options:
+        max-size: "5m"
+        max-file: "2"
+    ulimits:
+      nofile:
+        soft: 16384
+        hard: 16384
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 384M
+          pids: 99
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
+  development:
+    platform: linux/amd64
+    build:
+      context: .
+      target: development
+      args:
+        RUBY_VERSION: "${RUBY_VERSION:-3.4.8}"
+        RUBY_YJIT_ENABLE: "${RUBY_YJIT_ENABLE:-1}"
+        RUBY_ZJIT_ENABLE: "${RUBY_ZJIT_ENABLE:-}"
+        BUILD_DATE: "${BUILD_DATE:-}"
+        APP_VERSION: "${APP_VERSION:-}"
+      platforms:
+        - linux/amd64
+        - linux/arm64
+      cache_from:
+        - type=registry,ref=api-client:buildcache-development
+      cache_to:
+        - type=registry,ref=api-client:buildcache-development,mode=max
+    image: "api-client:development-ruby${RUBY_VERSION:-3.4.8}"
+    profiles:
+      - development
+    # on-failure avoids restart loops during interactive debugging
+    restart: on-failure
+    stop_grace_period: 10s
+    read_only: true
+    tmpfs:
+      - /tmp:size=128m,noexec,nosuid
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Shared memory for parallel test runners / ractor specs
+    shm_size: 256m
+    mem_swappiness: 0
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ulimits:
+      nofile:
+        soft: 16384
+        hard: 16384
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
+          # Higher than production — parallel_tests and ractor specs fork
+          pids: 256
