@@ -22,6 +22,12 @@ shfmt = "3.12.0"
 shellspec = "0.28.1"
 
 [env]
+# Force Apple Clang for Ruby/native extension builds — Homebrew LLVM
+# lacks RUBY_FUNCTION_NAME_STRING, causing vm_callinfo.h failures.
+# Also prevents sccache from wrapping the wrong compiler.
+CC = "/usr/bin/clang"
+CXX = "/usr/bin/clang++"
+
 # freeze string literals by default
 RUBYOPT = "--enable=frozen-string-literal"
 
