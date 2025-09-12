@@ -1,0 +1,77 @@
+name: Bug Report
+description: Report a bug in api-client
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill out the sections below
+        so we can reproduce and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened? What did you expect instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Minimal code or steps to trigger the bug.
+      placeholder: |
+        ```ruby
+        client = ApiClient.new(url: "https://example.com")
+        client.get("/endpoint")
+        # => unexpected result or error
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-output
+    attributes:
+      label: Error Output
+      description: Paste any error messages, backtraces, or logs.
+      render: text
+
+  - type: input
+    id: gem-version
+    attributes:
+      label: api-client Version
+      placeholder: "e.g. 0.1.0 or commit SHA"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: ruby-version
+    attributes:
+      label: Ruby Version
+      options:
+        - "3.2"
+        - "3.3"
+        - "3.4"
+        - "4.0"
+        - Other (specify in description)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: adapter
+    attributes:
+      label: Concurrency Adapter
+      description: Which adapter was active when the bug occurred?
+      options:
+        - Typhoeus
+        - Async
+        - Concurrent
+        - Sequential (none)
+        - Not sure
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Anything else that might help (OS, Rails version, related gems).
