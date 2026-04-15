@@ -199,7 +199,8 @@ COPY --from=ore-fetch /tmp/ore-install.sh /tmp/ore-install.sh
 # - 01-nodoc: skip manpages/docs for all apt installs in base + descendants.
 #             development stage removes this filter if INSTALL_MANPAGES is set
 # - libgit2 resolved dynamically (soversion varies by release)
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     if [ -n "${CACHE_BUMP_APT}" ]; then rm -rf /var/cache/apt/* /var/lib/apt/lists/* || true; fi \
     && apt-get update -qq \
     && LIBGIT2_RT=$(apt-cache search --names-only '^libgit2-[0-9]' \
@@ -260,14 +261,16 @@ ARG CACHE_BUMP_APT
 
 # apt-get update omitted — shared cache mount populated by base stage.
 # BuildKit guarantees base completes first (FROM dependency chain)
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked apt-get install -y ${BUILD_PACKAGES}
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get install -y ${BUILD_PACKAGES}
 
 # Sync .tool-versions so Bundler's `ruby file:`
 # constraint matches container
 COPY --link Gemfile Gemfile.lock api-client.gemspec .tool-versions ./
 COPY --link lib/api_client/version.rb lib/api_client/version.rb
 
-RUN echo "ruby ${RUBY_VERSION}" > .tool-versions \
+RUN echo "ruby ${RUBY_VERSION}" >.tool-versions \
     && install -d -o 10001 -g 10001 /app/vendor/bundle \
     && chown -R 10001:10001 /app
 
@@ -324,7 +327,7 @@ COPY --link --chown=10001:10001 Gemfile api-client.gemspec Rakefile ./
 COPY --from=gems-production /app/Gemfile.lock Gemfile.lock
 
 ARG RUBY_VERSION
-RUN echo "ruby ${RUBY_VERSION}" > .tool-versions
+RUN echo "ruby ${RUBY_VERSION}" >.tool-versions
 
 ENV BUNDLE_DEPLOYMENT=1
 ENV BUNDLE_FROZEN=1
@@ -379,7 +382,8 @@ ARG INSTALL_MISE=""
 RUN echo "Acquire::Retries \"${APT_RETRIES}\";" > /etc/apt/apt.conf.d/04-retries
 
 # apt-get update omitted — shared cache mount populated by base stage.
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get install -y ${BUILD_PACKAGES} \
     && if [ -n "${INSTALL_MANPAGES}" ]; then \
          rm -f /etc/dpkg/dpkg.cfg.d/01-nodoc \
@@ -417,7 +421,7 @@ ENV EDITOR="${INSTALL_VIM:+vi}"
 ENV VISUAL="${INSTALL_VIM:+vi}"
 ENV RSPEC_EXAMPLES_PATH="/app/tmp/examples.txt"
 
-RUN echo "ruby ${RUBY_VERSION}" > .tool-versions
+RUN echo "ruby ${RUBY_VERSION}" >.tool-versions
 COPY --from=gems-development /app/Gemfile.lock Gemfile.lock
 
 # Minimal vimrc when vim is installed
