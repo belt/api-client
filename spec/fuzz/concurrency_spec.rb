@@ -3,7 +3,7 @@ require "api_client"
 require "async"
 
 RSpec.describe ApiClient::Base, :fuzz, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   def run_concurrent_tasks(count, &block)
     Sync do |task|

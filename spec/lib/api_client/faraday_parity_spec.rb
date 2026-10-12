@@ -6,7 +6,7 @@ require "api_client"
 RSpec.describe "Faraday parity", :integration do # rubocop:disable RSpec/DescribeClass
   # Both clients point at the same test server so responses are comparable.
   let(:faraday) { Faraday.new(url: base_url) { |f| f.request :json } }
-  let(:api) { client_for_server }
+  let(:api) { client_for_mock_api }
 
   # ------------------------------------------------------------------
   # Constructor contract
@@ -196,14 +196,14 @@ RSpec.describe "Faraday parity", :integration do # rubocop:disable RSpec/Describ
 
     it "#success? matches for 404" do
       f_resp = faraday.get("/error/404")
-      a_resp = client_for_server(retry: {max: 0}).get("/error/404")
+      a_resp = client_for_mock_api(retry: {max: 0}).get("/error/404")
 
       expect(a_resp.success?).to eq(f_resp.success?)
     end
 
     it "#success? matches for 500" do
       f_resp = faraday.get("/error/500")
-      a_resp = client_for_server(retry: {max: 0}).get("/error/500")
+      a_resp = client_for_mock_api(retry: {max: 0}).get("/error/500")
 
       expect(a_resp.success?).to eq(f_resp.success?)
     end
@@ -303,8 +303,11 @@ RSpec.describe "Faraday parity", :integration do # rubocop:disable RSpec/Describ
   # ------------------------------------------------------------------
   describe "error contract" do
     it "both raise Faraday::ConnectionFailed on unreachable host" do
-      f = Faraday.new(url: "http://localhost:1")
-      a = ApiClient::Base.new(url: "http://localhost:1")
+      service_uri = "https://connection-failure.example.test"
+      stub_request(:get, "#{service_uri}/")
+        .to_raise(Faraday::ConnectionFailed.new("simulated connection failure"))
+      f = Faraday.new(url: service_uri)
+      a = ApiClient::Base.new(url: service_uri)
 
       faraday_error = begin
         f.get("/")
@@ -323,7 +326,7 @@ RSpec.describe "Faraday parity", :integration do # rubocop:disable RSpec/Describ
 
     it "both return 4xx without raising by default" do
       f_resp = faraday.get("/error/404")
-      a_resp = client_for_server(retry: {max: 0}).get("/error/404")
+      a_resp = client_for_mock_api(retry: {max: 0}).get("/error/404")
 
       expect(a_resp.status).to eq(f_resp.status)
       expect(a_resp.class).to eq(f_resp.class)
@@ -331,7 +334,7 @@ RSpec.describe "Faraday parity", :integration do # rubocop:disable RSpec/Describ
 
     it "both return 5xx without raising by default" do
       f_resp = faraday.get("/error/500")
-      a_resp = client_for_server(retry: {max: 0}).get("/error/500")
+      a_resp = client_for_mock_api(retry: {max: 0}).get("/error/500")
 
       expect(a_resp.status).to eq(f_resp.status)
       expect(a_resp.class).to eq(f_resp.class)

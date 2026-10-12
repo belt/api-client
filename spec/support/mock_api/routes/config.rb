@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # ConfigSnapshot: /config/apps/:app/environments → environment_ids,
       #   /config/apps/:app/environments/:env/snapshot → config snapshot

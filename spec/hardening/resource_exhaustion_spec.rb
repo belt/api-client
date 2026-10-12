@@ -31,7 +31,10 @@ RSpec.describe ApiClient::Base do # rubocop:disable RSpec/SpecFilePathFormat
 
     describe "circuit breaker protection" do
       let(:client) do
-        described_class.new(service_uri: service_uri).tap do |c|
+        described_class.new(
+          service_uri: service_uri,
+          retry: {interval: 0.001, interval_randomness: 0}
+        ).tap do |c|
           c.config.circuit.threshold = 3
           c.config.circuit.cool_off = 60
         end

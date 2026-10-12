@@ -49,7 +49,7 @@ module ApiClient
 
       def run_async(requests)
         Sync do |task|
-          internet = ::Async::HTTP::Internet.new
+          internet = build_internet
 
           tasks = requests.map do |request|
             task.async do
@@ -61,6 +61,10 @@ module ApiClient
         ensure
           internet&.close
         end
+      end
+
+      def build_internet
+        ::Async::HTTP::Internet.new
       end
 
       def execute_request(internet, request)

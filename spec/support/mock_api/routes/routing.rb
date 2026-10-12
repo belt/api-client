@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # GeoResolver: /routing/domains/:domain/edges → edge_ids,
       #   /edges/:id/probe → latency measurement

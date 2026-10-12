@@ -4,9 +4,11 @@ require "api_client"
 RSpec.describe ApiClient::Circuit, :integration do
   describe "circuit state transitions" do
     let(:client) do
-      client_for_server.tap do |c|
+      client_for_mock_api.tap do |c|
         c.config.circuit.threshold = 3
         c.config.circuit.cool_off = 1
+        c.config.retry.interval = 0.001
+        c.config.retry.interval_randomness = 0
       end
     end
 
@@ -47,8 +49,10 @@ RSpec.describe ApiClient::Circuit, :integration do
 
   describe "circuit metrics" do
     let(:client) do
-      client_for_server.tap do |c|
+      client_for_mock_api.tap do |c|
         c.config.circuit.threshold = 5
+        c.config.retry.interval = 0.001
+        c.config.retry.interval_randomness = 0
       end
     end
 
@@ -72,10 +76,10 @@ RSpec.describe ApiClient::Circuit, :integration do
   describe "circuit isolation" do
     it "maintains separate circuits per test client" do
       # Explicitly use different test_ids to ensure circuit isolation
-      client1 = ApiClient::TestClient.new(service_uri: base_url, test_id: "isolation-1")
+      client1 = ApiClient::TestClient.new(service_uri: base_url, test_id: "isolation-1", retry: {interval: 0.001, interval_randomness: 0})
       client1.config.circuit.threshold = 2
 
-      client2 = ApiClient::TestClient.new(service_uri: base_url, test_id: "isolation-2")
+      client2 = ApiClient::TestClient.new(service_uri: base_url, test_id: "isolation-2", retry: {interval: 0.001, interval_randomness: 0})
       client2.config.circuit.threshold = 2
 
       # Trip client1's circuit
@@ -90,8 +94,10 @@ RSpec.describe ApiClient::Circuit, :integration do
 
   describe "circuit with fallback" do
     it "returns fallback when circuit open" do
-      client = client_for_server
+      client = client_for_mock_api
       client.config.circuit.threshold = 2
+      client.config.retry.interval = 0.001
+      client.config.retry.interval_randomness = 0
 
       2.times { client.get("/error/500") rescue nil }
 

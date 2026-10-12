@@ -12,6 +12,8 @@ RSpec.describe ApiClient::Adapters::AsyncAdapter, :integration,
 
   let(:config) { build(:api_client_configuration, service_uri: base_url) }
 
+  before { stub_async_http(adapter) }
+
   it_behaves_like "parallel adapter"
   it_behaves_like "response normalization"
 

@@ -1,5 +1,6 @@
 require "active_support/core_ext/hash/deep_merge"
 require "etc"
+require "faraday/retry"
 require "ipaddr"
 
 module ApiClient
@@ -401,6 +402,12 @@ module ApiClient
 
   # Retry configuration (delegates to faraday-retry)
   class RetryConfig
+    EXHAUSTED_RETRIES_BLOCK = ->(**arguments) {
+      exception = arguments.fetch(:exception)
+      raise exception if exception.is_a?(Faraday::RetriableResponse)
+    }.freeze
+    private_constant :EXHAUSTED_RETRIES_BLOCK
+
     attr_reader :max, :interval, :interval_randomness, :backoff_factor,
       :retry_statuses, :methods, :exceptions
 
@@ -461,7 +468,8 @@ module ApiClient
         backoff_factor: backoff_factor,
         retry_statuses: disabled ? [] : retry_statuses,
         methods: disabled ? [] : methods,
-        exceptions: disabled ? [] : exceptions
+        exceptions: disabled ? [] : exceptions,
+        exhausted_retries_block: EXHAUSTED_RETRIES_BLOCK
       }.freeze
     end
 
@@ -470,7 +478,8 @@ module ApiClient
     def default_exceptions
       exceptions = [
         Errno::ETIMEDOUT,
-        Timeout::Error
+        Timeout::Error,
+        Faraday::RetriableResponse
       ]
       # Add Faraday exceptions only if Faraday is loaded
       if defined?(Faraday)

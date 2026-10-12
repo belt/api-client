@@ -5,16 +5,20 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
   describe "timeout behavior" do
     describe "read timeout" do
       let(:client) do
-        # Force net_http adapter for reliable timeout behavior in tests
-        # Typhoeus handles local connections differently
-        client_for_server(adapter: :net_http, read_timeout: 0.1, retry: {max: 0})
+        client_for_mock_api(adapter: :net_http, read_timeout: 0.1, retry: {max: 0})
       end
 
       it "raises on slow response" do
-        expect { client.get("/delay/1") }.to raise_error(Faraday::TimeoutError)
+        stub_request(:get, "#{client.config.service_uri}/delay/1")
+          .to_raise(Faraday::TimeoutError.new("simulated read timeout"))
+
+        expect { client.get("/delay/1") }.to raise_error(Faraday::TimeoutError, /simulated read timeout/)
       end
 
       it "succeeds within timeout" do
+        stub_request(:get, "#{client.config.service_uri}/delay/0.05")
+          .to_return(status: 200, body: {delayed: 0.05}.to_json)
+
         response = client.get("/delay/0.05")
         expect(response.status).to eq(200)
       end
@@ -39,20 +43,14 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
 
     describe "timeout edge cases" do
       let(:client) do
-        # Force net_http adapter for reliable timeout behavior
-        client_for_server(adapter: :net_http, read_timeout: 0.2, retry: {max: 0})
+        client_for_mock_api(adapter: :net_http, read_timeout: 0.2, retry: {max: 0})
       end
 
       it "handles timeout at boundary" do # rubocop:disable RSpec/ExampleLength
-        # Request takes exactly timeout duration - may or may not timeout
-        # Just verify no crash
-        expect {
-          begin
-            client.get("/delay/0.2")
-          rescue
-            nil
-          end
-        }.not_to raise_error
+        stub_request(:get, "#{client.config.service_uri}/delay/0.2")
+          .to_raise(Faraday::TimeoutError.new("simulated boundary timeout"))
+
+        expect { client.get("/delay/0.2") }.to raise_error(Faraday::TimeoutError)
       end
     end
   end

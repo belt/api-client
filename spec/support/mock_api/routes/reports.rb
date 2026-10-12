@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # ReportGenerator: /reports/:type/sections → section_ids,
       #   /reports/:type/sections/:id → section content

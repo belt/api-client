@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # LogAggregator: /logs/services/:service/shards → shard_ids,
       #   /shards/:id/entries → log entries

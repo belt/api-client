@@ -41,16 +41,18 @@ group :test do
   # api-client integrates with Rails but does not require it for operations
   gem "rails", "~> 8.1"
   gem "rspec-rails", ">= 7.0"  # Rails-specific RSpec matchers
-
-  # HTTP servers for integration tests
-  gem "falcon", ">= 0.54"      # Async fiber-based server
-  gem "puma", ">= 7.2"         # Thread-based server
 end
 
 group :development, :test do
   # Modern debugging (replaces pry/byebug for Ruby 3.1+)
   # https://railsatscale.com/2025-03-14-ruby-debugging-tips-and-recommendations-2025/
   gem "debug", ">= 1.11", require: "debug/prelude"
+
+  # Live transport tests are excluded from the default RSpec run
+  gem "puma", ">= 7.2"         # Async/Fiber compatibility and benchmark suites
+  gem "falcon", ">= 0.57"      # Thread compatibility suite
+  gem "toxiproxy", ">= 1.1"    # network chaos/fault-injection suite
+  gem "async-container", ">= 0.23"
 
   # Linting: Standard Ruby
   gem "standard", ">= 1.53", require: false
@@ -76,7 +78,6 @@ group :development, :test do
   gem "faker", ">= 3.6"        # random data for sparse edge-case detection
   gem "rantly", ">= 2.0"       # property-based testing (3.0+ needs Ruby >= 3.3)
   gem "timecop", ">= 0.9"      # time manipulation
-  gem "toxiproxy", ">= 2.0"    # chaos/fault injection
   gem "webmock", ">= 3.26"     # HTTP stubbing
 
   # Benchmarks/Observe ability/Performance

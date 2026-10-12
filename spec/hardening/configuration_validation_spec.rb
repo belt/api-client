@@ -111,20 +111,20 @@ RSpec.describe "Configuration validation", :integration do
 
   describe "Base#normalize_args unknown key detection" do
     it "raises ArgumentError for unknown keys in options hash" do
-      client = client_for_server
+      client = client_for_mock_api
       expect {
         client.get("/health", {params: {a: 1}, bogus: true})
       }.to raise_error(ArgumentError, /Unknown keys.*bogus/)
     end
 
     it "allows plain hash as params without raising" do
-      client = client_for_server
+      client = client_for_mock_api
       response = client.get("/health", {page: 1})
       expect(response.status).to eq(200)
     end
 
     it "allows keyword-style params and headers" do
-      client = client_for_server
+      client = client_for_mock_api
       response = client.get("/health", params: {}, headers: {})
       expect(response.status).to eq(200)
     end

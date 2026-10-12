@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # DepGraphBuilder: /registry/packages/:name/dependencies → dep_names,
       #   /registry/packages/:name/metadata → package metadata

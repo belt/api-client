@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # NotifyDispatcher: /notifications/campaigns/:id/recipients → recipient_ids,
       #   /deliver/:id → delivery receipt

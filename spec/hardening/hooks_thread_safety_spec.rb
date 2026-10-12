@@ -45,7 +45,7 @@ RSpec.describe "Hooks thread safety", :integration do
       counter = Concurrent::AtomicFixnum.new(0)
       ApiClient.configure { |c| c.on(:request_complete) { |_| counter.increment } }
 
-      client = client_for_server
+      client = client_for_mock_api
       barrier = Concurrent::CyclicBarrier.new(5)
 
       threads = 5.times.map do
@@ -71,7 +71,7 @@ RSpec.describe "Hooks thread safety", :integration do
         c.on(:request_complete) { |_| raise "boom" }
       end
 
-      client = client_for_server
+      client = client_for_mock_api
       response = client.get("/health")
       expect(response.status).to eq(200)
     end
@@ -84,7 +84,7 @@ RSpec.describe "Hooks thread safety", :integration do
         c.on(:request_complete) { |_| called.make_true }
       end
 
-      client = client_for_server
+      client = client_for_mock_api
       client.get("/health")
       expect(called.value).to be true
     end

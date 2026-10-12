@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # CatalogSearcher: /catalog/providers → provider_ids,
       #   /catalog/providers/:id/search → results

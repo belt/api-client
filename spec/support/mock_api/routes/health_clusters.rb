@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # HealthChecker: /health/clusters/:cluster/services → service_ids,
       #   /services/:id/ping → health status

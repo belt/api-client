@@ -2,7 +2,7 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe ApiClient::RequestFlow, :fuzz, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
   let(:request_flow) { client.request_flow }
 
   describe "request flow step fuzzing" do

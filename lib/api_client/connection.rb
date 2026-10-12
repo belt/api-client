@@ -1,4 +1,3 @@
-require "faraday/retry"
 require_relative "http_verbs"
 require_relative "response_builder"
 require_relative "concerns/poolable"

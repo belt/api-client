@@ -81,7 +81,7 @@ RSpec.describe ApiClient do
   describe "module-level HTTP methods", :integration do
     before do
       described_class.configure do |c|
-        c.service_uri = TestServerHolder.instance.base_url
+        c.service_uri = MockApiHolder.instance.base_url
       end
     end
 

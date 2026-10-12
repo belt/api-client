@@ -1,5 +1,5 @@
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # Base route module — provides JSON response helper and route registration DSL.
       #

@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # ComplianceAuditor: /compliance/tenants/:id/audit-sources → source_ids,
       #   /audit/:id/entries → audit entries

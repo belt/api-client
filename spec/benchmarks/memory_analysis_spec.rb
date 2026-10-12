@@ -19,7 +19,7 @@ require "ostruct"
 # 3. ApiClient module retains ~1KB after requests - likely configuration caching
 #
 RSpec.describe "Memory Analysis", :profile, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   # Thresholds for memory health (adjusted based on actual measurements)
   # These are intentionally set to catch regressions, not current state
