@@ -5,14 +5,14 @@ request flow pipelines, and JWT authentication. Built on Faraday.
 
 ## Why
 
-| Need               | Faraday alone    | api-client                         |
-|--------------------|------------------|------------------------------------|
-| Sequential HTTP    | ✓                | ✓                                  |
-| Batch/concurrent   | manual Typhoeus  | auto-detected                      |
-| Circuit breaker    | manual Stoplight | built-in                           |
-| Request pipelines  | —                | `fetch → then → fan_out → collect` |
-| JWT auth           | manual           | 4-phase key rotation               |
-| SSRF prevention    | —                | UriPolicy with blocklist           |
+| Need              | Faraday alone    | api-client                         |
+| ----------------- | ---------------- | ---------------------------------- |
+| Sequential HTTP   | ✓                | ✓                                  |
+| Batch/concurrent  | manual Typhoeus  | auto-detected                      |
+| Circuit breaker   | manual Stoplight | built-in                           |
+| Request pipelines | —                | `fetch → then → fan_out → collect` |
+| JWT auth          | manual           | 4-phase key rotation               |
+| SSRF prevention   | —                | UriPolicy with blocklist           |
 
 ## Install
 
@@ -114,7 +114,7 @@ Auto-detection priority: Typhoeus → Async → Concurrent.
 Per-adapter guides in [doc/onboarding/](doc/onboarding/onboarding.http.md).
 
 | Adapter    | Mechanism             | Best for                  |
-|------------|-----------------------|---------------------------|
+| ---------- | --------------------- | ------------------------- |
 | Typhoeus   | libcurl Hydra, HTTP/2 | High-throughput I/O       |
 | Async      | Ruby fibers           | Lightweight concurrency   |
 | Concurrent | Thread pool           | CPU-bound post-processing |
@@ -136,11 +136,15 @@ See [doc/auth/jwt.md](doc/auth/jwt.md) for full configuration and key management
 
 ## Processing
 
-| Processor  | Isolation                    | Use case             |
-|------------|------------------------------|----------------------|
-| Ractor     | Process-level (Ractor::Port) | CPU-bound transforms |
-| Async      | Fork                         | Untrusted workloads  |
-| Concurrent | Thread pool                  | I/O-bound fan-out    |
+`process` auto-selects Async, Concurrent, then Sequential. Ractor remains
+explicit opt-in through `.parallel_map` or `RactorProcessor`; Ruby may emit
+experimental API warnings when it is used.
+
+| Processor  | Isolation                    | Use case                          |
+| ---------- | ---------------------------- | --------------------------------- |
+| Ractor     | Process-level (Ractor::Port) | Experimental CPU-bound transforms |
+| Async      | Fork                         | Untrusted workloads               |
+| Concurrent | Thread pool                  | I/O-bound fan-out                 |
 
 ## Examples
 
@@ -157,6 +161,11 @@ bundle install
 bundle exec rspec
 bundle exec rake quality  # rubycritic, reek, flay, flog
 
+# Deliberate live-transport checks; both are excluded from the default suite:
+bundle exec rspec --tag server_compat  # Puma and Falcon compatibility examples
+bundle exec rspec --tag chaos          # requires toxiproxy-server on 127.0.0.1:8474
+bundle exec rspec --tag experimental_ractor # Ruby 4.0+; exercises experimental Ractor API
+
 # Install pre-push hook (CI parity gate on main)
 git config core.hooksPath .githooks
 ```
@@ -169,14 +178,14 @@ git config core.hooksPath .githooks
 
 ### Optional
 
-| Gem              | Enables                             |
-|------------------|-------------------------------------|
-| typhoeus         | HTTP/2 adapter via libcurl Hydra    |
-| faraday-typhoeus | Faraday integration for typhoeus    |
-| async, async-http| Fiber-based concurrent adapter      |
-| concurrent-ruby  | Thread pool adapter                 |
-| jwt              | JWT authentication and key rotation |
-| fiddle           | Native RSS measurement via FFI      |
+| Gem               | Enables                             |
+| ----------------- | ----------------------------------- |
+| typhoeus          | HTTP/2 adapter via libcurl Hydra    |
+| faraday-typhoeus  | Faraday integration for typhoeus    |
+| async, async-http | Fiber-based concurrent adapter      |
+| concurrent-ruby   | Thread pool adapter                 |
+| jwt               | JWT authentication and key rotation |
+| fiddle            | Native RSS measurement via FFI      |
 
 ## License
 
