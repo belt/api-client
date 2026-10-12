@@ -18,6 +18,9 @@ require "webmock/errors"
 require "webmock/util/query_mapper"
 require "webmock/util/uri"
 require "webmock/util/headers"
+if Gem.loaded_specs.fetch("webmock").version >= Gem::Version.new("3.29.0")
+  require "webmock/util/content_type"
+end
 require "webmock/util/hash_counter"
 require "webmock/util/hash_keys_stringifier"
 require "webmock/util/values_stringifier"
@@ -35,6 +38,9 @@ require "webmock/responses_sequence"
 require "webmock/request_stub"
 require "webmock/response"
 require "webmock/rack_response"
+if Gem.loaded_specs.fetch("webmock").version >= Gem::Version.new("3.29.0")
+  require "webmock/json_body_hint"
+end
 require "webmock/stub_request_snippet"
 require "webmock/request_signature_snippet"
 require "webmock/request_body_diff"

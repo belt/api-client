@@ -48,7 +48,7 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "faraday", ">= 2.0"
   spec.add_runtime_dependency "faraday-retry", ">= 2.0"
   spec.add_runtime_dependency "nxt_registry", ">= 0.3"
-  spec.add_runtime_dependency "stoplight", ">= 3.0"
+  spec.add_runtime_dependency "stoplight", ">= 3.0", "< 6.0"
 
   # ID slow methods and lines (prod safe)
   # Consider https://rbspy.github.io/ for outside-in prod-safe sampling profiler

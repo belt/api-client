@@ -22,8 +22,7 @@ module ApiClient
     class KeyStore
       # Key entry with metadata
       KeyEntry = Struct.new(
-        :jwk, :kid, :algorithm, :state, :added_at, :retired_at,
-        keyword_init: true
+        :jwk, :kid, :algorithm, :state, :added_at, :retired_at
       ) do
         def active?
           state == :active
