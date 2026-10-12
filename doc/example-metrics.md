@@ -2,13 +2,13 @@
 title: "Example Client Metrics"
 audience_chain: ["developer", "maintainer"]
 semantic_version: "1.0"
-last_updated_at: "2026-02-09"
+last_updated_at: "2026-10-12"
 ---
 
 ## Example Clients Metrics
 
 Performance metrics for the 16 canonical `RequestFlow`
-examples, measured against a custom Falcon test server on
+examples, measured against an isolated Puma benchmark fixture on
 localhost.
 
 Regenerate with:
@@ -29,10 +29,10 @@ with NullCircuit as the first row.
 ## Environment
 
 ```text
-Ruby:    4.0.1 (x86_64-darwin25)
+Ruby:    4.0.7 (arm64-darwin23)
 YJIT:    enabled
-Server:  Falcon (Async::Container::Threaded, 12 workers)
-Network: loopback (127.0.0.1)
+Server:  Puma (loopback only; benchmark task, not RSpec)
+Network: loopback (127.0.0.1; benchmark task only)
 ```
 
 ## Processor x Adapter Matrix
@@ -41,369 +41,59 @@ Grouped by processor (fastest to slowest). Within each group,
 clients sorted by Stoplight performance (fastest first).
 NullCircuit baseline shown first for each client.
 
-### concurrent
-
-| Client            | Circuit     | Adapter    | Med ms | CPU ms | Alloc | Retain |
-| ----------------- | ----------- | ---------- | -----: | -----: | ----: | -----: |
-| PayReconciler     | NullCircuit | concurrent |   1.73 |   1.69 |   884 |     14 |
-| PayReconciler     | Stoplight   | concurrent |   1.72 |    1.7 |   884 |     14 |
-| ComplianceAuditor | NullCircuit | typhoeus   |   1.71 |   1.68 |   884 |     14 |
-| ComplianceAuditor | Stoplight   | typhoeus   |    1.8 |   1.79 |   884 |     14 |
-| NotifyDispatcher  | NullCircuit | async      |   1.74 |   1.71 |   884 |     14 |
-| NotifyDispatcher  | Stoplight   | async      |   1.83 |    1.8 |   884 |     14 |
-| MetricsCollector  | NullCircuit | sequential |    2.2 |   2.14 |   885 |     14 |
-| MetricsCollector  | Stoplight   | sequential |   2.14 |    2.1 |   885 |     14 |
-
-### async
-
-| Client            | Circuit     | Adapter    | Med ms | CPU ms | Alloc | Retain |
-| ----------------- | ----------- | ---------- | -----: | -----: | ----: | -----: |
-| CatalogSearcher   | NullCircuit | typhoeus   |   1.78 |   1.75 |   878 |     14 |
-| CatalogSearcher   | Stoplight   | typhoeus   |   1.78 |   1.77 |   878 |     14 |
-| LogAggregator     | NullCircuit | sequential |   2.11 |   2.06 |   894 |     14 |
-| LogAggregator     | Stoplight   | sequential |   1.83 |   1.79 |   894 |     14 |
-| GeoResolver       | NullCircuit | concurrent |   2.03 |   1.97 |   884 |     14 |
-| GeoResolver       | Stoplight   | concurrent |   2.01 |    2.0 |   884 |     14 |
-| HealthChecker     | NullCircuit | async      |   2.17 |    2.1 |   884 |     14 |
-| HealthChecker     | Stoplight   | async      |   2.09 |   2.01 |   884 |     14 |
-
 ### sequential
 
 | Client            | Circuit     | Adapter    | Med ms | CPU ms | Alloc | Retain |
 | ----------------- | ----------- | ---------- | -----: | -----: | ----: | -----: |
-| DepGraphBuilder   | NullCircuit | concurrent |   2.04 |   2.01 |   860 |     14 |
-| DepGraphBuilder   | Stoplight   | concurrent |   1.94 |   1.92 |   860 |     14 |
-| LegacyExporter    | NullCircuit | typhoeus   |   2.07 |   2.04 |   859 |     14 |
-| LegacyExporter    | Stoplight   | typhoeus   |   1.97 |   1.92 |   859 |     14 |
-| ConfigSnapshot    | NullCircuit | async      |   2.05 |   2.03 |   858 |     14 |
-| ConfigSnapshot    | Stoplight   | async      |   2.06 |   2.03 |   858 |     14 |
-| ReportGenerator   | NullCircuit | sequential |    2.0 |   1.98 |   857 |     14 |
-| ReportGenerator   | Stoplight   | sequential |   2.17 |    2.1 |   857 |     14 |
+| ConfigSnapshot    | NullCircuit | async      |   0.66 |   0.65 |   629 |     12 |
+| ConfigSnapshot    | Stoplight   | async      |   0.65 |   0.65 |   629 |     12 |
+| LegacyExporter    | NullCircuit | typhoeus   |   0.63 |   0.63 |   630 |     12 |
+| LegacyExporter    | Stoplight   | typhoeus   |   0.66 |   0.64 |   630 |     12 |
+| DepGraphBuilder   | NullCircuit | concurrent |   0.67 |   0.66 |   631 |     12 |
+| DepGraphBuilder   | Stoplight   | concurrent |   0.67 |   0.66 |   631 |     12 |
+| ReportGenerator   | NullCircuit | sequential |   0.67 |   0.65 |   628 |     12 |
+| ReportGenerator   | Stoplight   | sequential |   0.68 |   0.68 |   628 |     12 |
 
 ### ractor
 
 | Client            | Circuit     | Adapter    | Med ms | CPU ms | Alloc | Retain |
 | ----------------- | ----------- | ---------- | -----: | -----: | ----: | -----: |
-| FeedIngestor      | NullCircuit | async      |   1.82 |   1.85 |   882 |     14 |
-| FeedIngestor      | Stoplight   | async      |   1.94 |   1.93 |   882 |     14 |
-| OrderFulfiller    | NullCircuit | typhoeus   |   2.04 |   1.99 |   878 |     14 |
-| OrderFulfiller    | Stoplight   | typhoeus   |   2.02 |   1.99 |   878 |     14 |
-| UserEnricher      | NullCircuit | sequential |   2.03 |    2.0 |   884 |     14 |
-| UserEnricher      | Stoplight   | sequential |    2.1 |   2.05 |   884 |     14 |
-| ThreatScanner     | NullCircuit | concurrent |   1.99 |   1.96 |   884 |     14 |
-| ThreatScanner     | Stoplight   | concurrent |   2.13 |   2.13 |   884 |     14 |
+| OrderFulfiller    | NullCircuit | typhoeus   |   0.66 |   0.66 |   645 |     12 |
+| OrderFulfiller    | Stoplight   | typhoeus   |   0.65 |   0.64 |   648 |     13 |
+| UserEnricher      | NullCircuit | sequential |   0.66 |   0.65 |   650 |     12 |
+| UserEnricher      | Stoplight   | sequential |   0.67 |   0.66 |   650 |     12 |
+| ThreatScanner     | NullCircuit | concurrent |   0.67 |   0.67 |   650 |     12 |
+| ThreatScanner     | Stoplight   | concurrent |   0.68 |   0.66 |   650 |     12 |
+| FeedIngestor      | NullCircuit | async      |   0.68 |   0.68 |   648 |     12 |
+| FeedIngestor      | Stoplight   | async      |   0.69 |   0.68 |   648 |     12 |
+
+### async
+
+| Client            | Circuit     | Adapter    | Med ms | CPU ms | Alloc | Retain |
+| ----------------- | ----------- | ---------- | -----: | -----: | ----: | -----: |
+| GeoResolver       | NullCircuit | concurrent |   0.67 |   0.66 |   650 |     12 |
+| GeoResolver       | Stoplight   | concurrent |   0.67 |   0.67 |   650 |     12 |
+| CatalogSearcher   | NullCircuit | typhoeus   |   0.68 |   0.67 |   645 |     12 |
+| CatalogSearcher   | Stoplight   | typhoeus   |   0.67 |   0.65 |   645 |     12 |
+| LogAggregator     | NullCircuit | sequential |   0.68 |   0.67 |   661 |     12 |
+| LogAggregator     | Stoplight   | sequential |   0.69 |   0.68 |   661 |     12 |
+| HealthChecker     | NullCircuit | async      |   0.68 |   0.65 |   650 |     12 |
+| HealthChecker     | Stoplight   | async      |   0.69 |   0.68 |   650 |     12 |
+
+### concurrent
+
+| Client            | Circuit     | Adapter    | Med ms | CPU ms | Alloc | Retain |
+| ----------------- | ----------- | ---------- | -----: | -----: | ----: | -----: |
+| ComplianceAuditor | NullCircuit | typhoeus   |   0.68 |   0.68 |   650 |     12 |
+| ComplianceAuditor | Stoplight   | typhoeus   |   0.67 |   0.65 |   650 |     12 |
+| MetricsCollector  | NullCircuit | sequential |   0.68 |   0.67 |   651 |     12 |
+| MetricsCollector  | Stoplight   | sequential |   0.68 |   0.67 |   651 |     12 |
+| NotifyDispatcher  | NullCircuit | async      |   0.67 |   0.66 |   650 |     12 |
+| NotifyDispatcher  | Stoplight   | async      |   0.69 |   0.68 |   650 |     12 |
+| PayReconciler     | NullCircuit | concurrent |   0.68 |   0.67 |   650 |     12 |
+| PayReconciler     | Stoplight   | concurrent |   0.69 |   0.68 |   650 |     12 |
 
 ## Per-Client Detail
-
-### PayReconciler
-
-- Adapter: `concurrent` (I/O)
-- Processor: `concurrent` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 1.73 ms
-- P95: 1.88 ms
-- P99: 2.46 ms
-- CPU time: 1.69 ms (user: 1.19, sys: 0.5)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.0 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.72 ms
-- P95: 2.46 ms
-- P99: 4.64 ms
-- CPU time: 1.7 ms (user: 1.21, sys: 0.49)
-- RSS before: 74256 KB
-- RSS peak delta: +20 KB
-- RSS avg delta: 4.8 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.01 ms
-- Relative: -0.6%
-
-### ComplianceAuditor
-
-- Adapter: `typhoeus` (I/O)
-- Processor: `concurrent` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 1.71 ms
-- P95: 2.54 ms
-- P99: 3.87 ms
-- CPU time: 1.68 ms (user: 1.18, sys: 0.5)
-- RSS peak delta: +8 KB
-- RSS avg delta: 2.2 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.8 ms
-- P95: 2.6 ms
-- P99: 4.92 ms
-- CPU time: 1.79 ms (user: 1.26, sys: 0.53)
-- RSS before: 73780 KB
-- RSS peak delta: +8 KB
-- RSS avg delta: 1.0 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: +0.09 ms
-- Relative: +5.3%
-
-### NotifyDispatcher
-
-- Adapter: `async` (I/O)
-- Processor: `concurrent` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 1.74 ms
-- P95: 2.1 ms
-- P99: 2.49 ms
-- CPU time: 1.71 ms (user: 1.21, sys: 0.5)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.0 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.83 ms
-- P95: 2.81 ms
-- P99: 5.45 ms
-- CPU time: 1.8 ms (user: 1.28, sys: 0.52)
-- RSS before: 74372 KB
-- RSS peak delta: +0 KB
-- RSS avg delta: 1.4 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: +0.09 ms
-- Relative: +5.2%
-
-### MetricsCollector
-
-- Adapter: `sequential` (I/O)
-- Processor: `concurrent` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 2.2 ms
-- P95: 2.84 ms
-- P99: 3.14 ms
-- CPU time: 2.14 ms (user: 1.53, sys: 0.61)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.2 KB/invocation
-- Allocated: 885 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 2.14 ms
-- P95: 2.49 ms
-- P99: 5.6 ms
-- CPU time: 2.1 ms (user: 1.49, sys: 0.61)
-- RSS before: 74716 KB
-- RSS peak delta: +12 KB
-- RSS avg delta: 1.4 KB/invocation
-- GC objects/invocation: 1016
-- Allocated: 885 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.06 ms
-- Relative: -2.7%
-
-### CatalogSearcher
-
-- Adapter: `typhoeus` (I/O)
-- Processor: `async` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 1.78 ms
-- P95: 2.28 ms
-- P99: 2.29 ms
-- CPU time: 1.75 ms (user: 1.24, sys: 0.51)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.2 KB/invocation
-- Allocated: 878 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.78 ms
-- P95: 2.44 ms
-- P99: 5.08 ms
-- CPU time: 1.77 ms (user: 1.21, sys: 0.56)
-- RSS before: 74468 KB
-- RSS peak delta: +4 KB
-- RSS avg delta: 0.8 KB/invocation
-- GC objects/invocation: 1009
-- Allocated: 878 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: +0.0 ms
-- Relative: +0.0%
-
-### LogAggregator
-
-- Adapter: `sequential` (I/O)
-- Processor: `async` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 2.11 ms
-- P95: 3.74 ms
-- P99: 6.49 ms
-- CPU time: 2.06 ms (user: 1.47, sys: 0.59)
-- RSS peak delta: +76 KB
-- RSS avg delta: 17.2 KB/invocation
-- Allocated: 894 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.83 ms
-- P95: 4.69 ms
-- P99: 8.95 ms
-- CPU time: 1.79 ms (user: 1.27, sys: 0.52)
-- RSS before: 73384 KB
-- RSS peak delta: +32 KB
-- RSS avg delta: 8.8 KB/invocation
-- GC objects/invocation: 1028
-- Allocated: 894 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.28 ms
-- Relative: -13.3%
-
-### GeoResolver
-
-- Adapter: `concurrent` (I/O)
-- Processor: `async` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 2.03 ms
-- P95: 2.17 ms
-- P99: 2.27 ms
-- CPU time: 1.97 ms (user: 1.4, sys: 0.57)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.0 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 2.01 ms
-- P95: 2.48 ms
-- P99: 5.6 ms
-- CPU time: 2.0 ms (user: 1.42, sys: 0.58)
-- RSS before: 75076 KB
-- RSS peak delta: +0 KB
-- RSS avg delta: 1.0 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.02 ms
-- Relative: -1.0%
-
-### HealthChecker
-
-- Adapter: `async` (I/O)
-- Processor: `async` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 2.17 ms
-- P95: 2.51 ms
-- P99: 2.82 ms
-- CPU time: 2.1 ms (user: 1.51, sys: 0.59)
-- RSS peak delta: +4 KB
-- RSS avg delta: 0.6 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 2.09 ms
-- P95: 2.42 ms
-- P99: 5.53 ms
-- CPU time: 2.01 ms (user: 1.41, sys: 0.6)
-- RSS before: 75644 KB
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.6 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.08 ms
-- Relative: -3.7%
-
-### DepGraphBuilder
-
-- Adapter: `concurrent` (I/O)
-- Processor: `sequential` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 2.04 ms
-- P95: 2.54 ms
-- P99: 3.03 ms
-- CPU time: 2.01 ms (user: 1.4, sys: 0.61)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.2 KB/invocation
-- Allocated: 860 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.94 ms
-- P95: 4.4 ms
-- P99: 5.53 ms
-- CPU time: 1.92 ms (user: 1.34, sys: 0.58)
-- RSS before: 75328 KB
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.8 KB/invocation
-- GC objects/invocation: 983
-- Allocated: 860 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.1 ms
-- Relative: -4.9%
-
-### LegacyExporter
-
-- Adapter: `typhoeus` (I/O)
-- Processor: `sequential` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 2.07 ms
-- P95: 2.25 ms
-- P99: 3.24 ms
-- CPU time: 2.04 ms (user: 1.47, sys: 0.57)
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.2 KB/invocation
-- Allocated: 859 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.97 ms
-- P95: 3.1 ms
-- P99: 5.53 ms
-- CPU time: 1.92 ms (user: 1.38, sys: 0.54)
-- RSS before: 75100 KB
-- RSS peak delta: +4 KB
-- RSS avg delta: 0.6 KB/invocation
-- GC objects/invocation: 982
-- Allocated: 859 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: -0.1 ms
-- Relative: -4.8%
 
 ### ConfigSnapshot
 
@@ -411,30 +101,92 @@ NullCircuit baseline shown first for each client.
 - Processor: `sequential` (CPU)
 
 #### NullCircuit (baseline)
-- Median: 2.05 ms
-- P95: 2.29 ms
-- P99: 3.02 ms
-- CPU time: 2.03 ms (user: 1.45, sys: 0.58)
+- Median: 0.66 ms
+- P95: 0.84 ms
+- P99: 0.93 ms
+- CPU time: 0.65 ms (user: 0.34, sys: 0.31)
 - RSS peak delta: +0 KB
 - RSS avg delta: 0.0 KB/invocation
-- Allocated: 858 objects
-- Retained: 14 objects
+- Allocated: 629 objects
+- Retained: 12 objects
 
 #### Stoplight (circuit breaker)
-- Median: 2.06 ms
-- P95: 5.58 ms
-- P99: 5.96 ms
-- CPU time: 2.03 ms (user: 1.45, sys: 0.58)
-- RSS before: 75352 KB
-- RSS peak delta: +24 KB
-- RSS avg delta: 6.0 KB/invocation
-- GC objects/invocation: 981
-- Allocated: 858 objects
-- Retained: 14 objects
+- Median: 0.65 ms
+- P95: 0.74 ms
+- P99: 0.94 ms
+- CPU time: 0.65 ms (user: 0.35, sys: 0.3)
+- RSS before: 87456 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 715
+- Allocated: 629 objects
+- Retained: 12 objects
 
 #### Circuit Overhead
-- Absolute: +0.01 ms
-- Relative: +0.5%
+- Absolute: -0.01 ms
+- Relative: -1.5%
+
+### LegacyExporter
+
+- Adapter: `typhoeus` (I/O)
+- Processor: `sequential` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.63 ms
+- P95: 0.68 ms
+- P99: 0.68 ms
+- CPU time: 0.63 ms (user: 0.34, sys: 0.29)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 630 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.66 ms
+- P95: 0.91 ms
+- P99: 1.02 ms
+- CPU time: 0.64 ms (user: 0.34, sys: 0.3)
+- RSS before: 87424 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 1.6 KB/invocation
+- GC objects/invocation: 716
+- Allocated: 630 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.03 ms
+- Relative: +4.8%
+
+### DepGraphBuilder
+
+- Adapter: `concurrent` (I/O)
+- Processor: `sequential` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.67 ms
+- P95: 0.88 ms
+- P99: 0.94 ms
+- CPU time: 0.66 ms (user: 0.37, sys: 0.29)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 631 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.67 ms
+- P95: 0.85 ms
+- P99: 1.29 ms
+- CPU time: 0.66 ms (user: 0.38, sys: 0.28)
+- RSS before: 87088 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 717
+- Allocated: 631 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.0 ms
+- Relative: +0.0%
 
 ### ReportGenerator
 
@@ -442,61 +194,30 @@ NullCircuit baseline shown first for each client.
 - Processor: `sequential` (CPU)
 
 #### NullCircuit (baseline)
-- Median: 2.0 ms
-- P95: 3.14 ms
-- P99: 4.16 ms
-- CPU time: 1.98 ms (user: 1.41, sys: 0.57)
-- RSS peak delta: +24 KB
-- RSS avg delta: 6.6 KB/invocation
-- Allocated: 857 objects
-- Retained: 14 objects
+- Median: 0.67 ms
+- P95: 0.95 ms
+- P99: 0.96 ms
+- CPU time: 0.65 ms (user: 0.35, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 628 objects
+- Retained: 12 objects
 
 #### Stoplight (circuit breaker)
-- Median: 2.17 ms
-- P95: 2.39 ms
-- P99: 5.96 ms
-- CPU time: 2.1 ms (user: 1.45, sys: 0.65)
-- RSS before: 75252 KB
+- Median: 0.68 ms
+- P95: 0.92 ms
+- P99: 0.92 ms
+- CPU time: 0.68 ms (user: 0.38, sys: 0.3)
+- RSS before: 87056 KB
 - RSS peak delta: +0 KB
-- RSS avg delta: 3.6 KB/invocation
-- GC objects/invocation: 980
-- Allocated: 857 objects
-- Retained: 14 objects
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 714
+- Allocated: 628 objects
+- Retained: 12 objects
 
 #### Circuit Overhead
-- Absolute: +0.17 ms
-- Relative: +8.5%
-
-### FeedIngestor
-
-- Adapter: `async` (I/O)
-- Processor: `ractor` (CPU)
-
-#### NullCircuit (baseline)
-- Median: 1.82 ms
-- P95: 2.47 ms
-- P99: 3.34 ms
-- CPU time: 1.85 ms (user: 1.3, sys: 0.55)
-- RSS peak delta: +4 KB
-- RSS avg delta: 1.0 KB/invocation
-- Allocated: 882 objects
-- Retained: 14 objects
-
-#### Stoplight (circuit breaker)
-- Median: 1.94 ms
-- P95: 3.97 ms
-- P99: 5.63 ms
-- CPU time: 1.93 ms (user: 1.38, sys: 0.55)
-- RSS before: 74520 KB
-- RSS peak delta: +0 KB
-- RSS avg delta: 0.6 KB/invocation
-- GC objects/invocation: 1013
-- Allocated: 882 objects
-- Retained: 14 objects
-
-#### Circuit Overhead
-- Absolute: +0.12 ms
-- Relative: +6.6%
+- Absolute: +0.01 ms
+- Relative: +1.5%
 
 ### OrderFulfiller
 
@@ -504,30 +225,30 @@ NullCircuit baseline shown first for each client.
 - Processor: `ractor` (CPU)
 
 #### NullCircuit (baseline)
-- Median: 2.04 ms
-- P95: 2.32 ms
-- P99: 3.15 ms
-- CPU time: 1.99 ms (user: 1.41, sys: 0.58)
-- RSS peak delta: +8 KB
-- RSS avg delta: 4.2 KB/invocation
-- Allocated: 878 objects
-- Retained: 14 objects
+- Median: 0.66 ms
+- P95: 0.8 ms
+- P99: 0.9 ms
+- CPU time: 0.66 ms (user: 0.36, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 645 objects
+- Retained: 12 objects
 
 #### Stoplight (circuit breaker)
-- Median: 2.02 ms
-- P95: 2.7 ms
-- P99: 5.49 ms
-- CPU time: 1.99 ms (user: 1.41, sys: 0.58)
-- RSS before: 74020 KB
-- RSS peak delta: +16 KB
-- RSS avg delta: 4.6 KB/invocation
-- GC objects/invocation: 1009
-- Allocated: 878 objects
-- Retained: 14 objects
+- Median: 0.65 ms
+- P95: 0.93 ms
+- P99: 0.95 ms
+- CPU time: 0.64 ms (user: 0.34, sys: 0.3)
+- RSS before: 87104 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 739
+- Allocated: 648 objects
+- Retained: 13 objects
 
 #### Circuit Overhead
-- Absolute: -0.02 ms
-- Relative: -1.0%
+- Absolute: -0.01 ms
+- Relative: -1.5%
 
 ### UserEnricher
 
@@ -535,30 +256,30 @@ NullCircuit baseline shown first for each client.
 - Processor: `ractor` (CPU)
 
 #### NullCircuit (baseline)
-- Median: 2.03 ms
-- P95: 2.43 ms
-- P99: 2.57 ms
-- CPU time: 2.0 ms (user: 1.43, sys: 0.57)
+- Median: 0.66 ms
+- P95: 0.76 ms
+- P99: 0.95 ms
+- CPU time: 0.65 ms (user: 0.36, sys: 0.29)
 - RSS peak delta: +0 KB
 - RSS avg delta: 0.0 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
+- Allocated: 650 objects
+- Retained: 12 objects
 
 #### Stoplight (circuit breaker)
-- Median: 2.1 ms
-- P95: 4.09 ms
-- P99: 5.47 ms
-- CPU time: 2.05 ms (user: 1.47, sys: 0.58)
-- RSS before: 74824 KB
-- RSS peak delta: +80 KB
-- RSS avg delta: 12.6 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
+- Median: 0.67 ms
+- P95: 0.93 ms
+- P99: 1.0 ms
+- CPU time: 0.66 ms (user: 0.36, sys: 0.3)
+- RSS before: 87648 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.8 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
 
 #### Circuit Overhead
-- Absolute: +0.07 ms
-- Relative: +3.4%
+- Absolute: +0.01 ms
+- Relative: +1.5%
 
 ### ThreatScanner
 
@@ -566,35 +287,314 @@ NullCircuit baseline shown first for each client.
 - Processor: `ractor` (CPU)
 
 #### NullCircuit (baseline)
-- Median: 1.99 ms
-- P95: 2.23 ms
-- P99: 2.67 ms
-- CPU time: 1.96 ms (user: 1.4, sys: 0.56)
+- Median: 0.67 ms
+- P95: 0.78 ms
+- P99: 0.92 ms
+- CPU time: 0.67 ms (user: 0.37, sys: 0.3)
 - RSS peak delta: +0 KB
 - RSS avg delta: 0.0 KB/invocation
-- Allocated: 884 objects
-- Retained: 14 objects
+- Allocated: 650 objects
+- Retained: 12 objects
 
 #### Stoplight (circuit breaker)
-- Median: 2.13 ms
-- P95: 2.81 ms
-- P99: 5.86 ms
-- CPU time: 2.13 ms (user: 1.5, sys: 0.63)
-- RSS before: 74592 KB
-- RSS peak delta: +16 KB
-- RSS avg delta: 5.4 KB/invocation
-- GC objects/invocation: 1015
-- Allocated: 884 objects
-- Retained: 14 objects
+- Median: 0.68 ms
+- P95: 0.85 ms
+- P99: 0.93 ms
+- CPU time: 0.66 ms (user: 0.37, sys: 0.29)
+- RSS before: 87456 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
 
 #### Circuit Overhead
-- Absolute: +0.14 ms
-- Relative: +7.0%
+- Absolute: +0.01 ms
+- Relative: +1.5%
+
+### FeedIngestor
+
+- Adapter: `async` (I/O)
+- Processor: `ractor` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 0.92 ms
+- P99: 1.0 ms
+- CPU time: 0.68 ms (user: 0.37, sys: 0.31)
+- RSS peak delta: +80 KB
+- RSS avg delta: 8.8 KB/invocation
+- Allocated: 648 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.69 ms
+- P95: 1.36 ms
+- P99: 1.46 ms
+- CPU time: 0.68 ms (user: 0.37, sys: 0.31)
+- RSS before: 86848 KB
+- RSS peak delta: +32 KB
+- RSS avg delta: 4.8 KB/invocation
+- GC objects/invocation: 742
+- Allocated: 648 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.01 ms
+- Relative: +1.5%
+
+### GeoResolver
+
+- Adapter: `concurrent` (I/O)
+- Processor: `async` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.67 ms
+- P95: 0.86 ms
+- P99: 0.92 ms
+- CPU time: 0.66 ms (user: 0.36, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.67 ms
+- P95: 0.85 ms
+- P99: 0.95 ms
+- CPU time: 0.67 ms (user: 0.35, sys: 0.32)
+- RSS before: 87104 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.0 ms
+- Relative: +0.0%
+
+### CatalogSearcher
+
+- Adapter: `typhoeus` (I/O)
+- Processor: `async` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 0.73 ms
+- P99: 0.94 ms
+- CPU time: 0.67 ms (user: 0.37, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 645 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.67 ms
+- P95: 0.98 ms
+- P99: 0.99 ms
+- CPU time: 0.65 ms (user: 0.37, sys: 0.28)
+- RSS before: 87104 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.8 KB/invocation
+- GC objects/invocation: 739
+- Allocated: 645 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: -0.01 ms
+- Relative: -1.5%
+
+### LogAggregator
+
+- Adapter: `sequential` (I/O)
+- Processor: `async` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 1.03 ms
+- P99: 1.13 ms
+- CPU time: 0.67 ms (user: 0.38, sys: 0.29)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 661 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.69 ms
+- P95: 0.95 ms
+- P99: 1.81 ms
+- CPU time: 0.68 ms (user: 0.4, sys: 0.28)
+- RSS before: 87008 KB
+- RSS peak delta: +16 KB
+- RSS avg delta: 3.2 KB/invocation
+- GC objects/invocation: 758
+- Allocated: 661 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.01 ms
+- Relative: +1.5%
+
+### HealthChecker
+
+- Adapter: `async` (I/O)
+- Processor: `async` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 0.74 ms
+- P99: 0.85 ms
+- CPU time: 0.65 ms (user: 0.36, sys: 0.29)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.69 ms
+- P95: 0.93 ms
+- P99: 0.96 ms
+- CPU time: 0.68 ms (user: 0.37, sys: 0.31)
+- RSS before: 87072 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.01 ms
+- Relative: +1.5%
+
+### ComplianceAuditor
+
+- Adapter: `typhoeus` (I/O)
+- Processor: `concurrent` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 0.81 ms
+- P99: 1.01 ms
+- CPU time: 0.68 ms (user: 0.38, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.67 ms
+- P95: 0.93 ms
+- P99: 0.94 ms
+- CPU time: 0.65 ms (user: 0.35, sys: 0.3)
+- RSS before: 87088 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: -0.01 ms
+- Relative: -1.5%
+
+### MetricsCollector
+
+- Adapter: `sequential` (I/O)
+- Processor: `concurrent` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 0.89 ms
+- P99: 0.89 ms
+- CPU time: 0.67 ms (user: 0.37, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 651 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.68 ms
+- P95: 1.08 ms
+- P99: 1.46 ms
+- CPU time: 0.67 ms (user: 0.37, sys: 0.3)
+- RSS before: 87120 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 15.2 KB/invocation
+- GC objects/invocation: 745
+- Allocated: 651 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.0 ms
+- Relative: +0.0%
+
+### NotifyDispatcher
+
+- Adapter: `async` (I/O)
+- Processor: `concurrent` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.67 ms
+- P95: 0.93 ms
+- P99: 0.94 ms
+- CPU time: 0.66 ms (user: 0.34, sys: 0.32)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.69 ms
+- P95: 1.02 ms
+- P99: 1.17 ms
+- CPU time: 0.68 ms (user: 0.38, sys: 0.3)
+- RSS before: 86976 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.8 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.02 ms
+- Relative: +3.0%
+
+### PayReconciler
+
+- Adapter: `concurrent` (I/O)
+- Processor: `concurrent` (CPU)
+
+#### NullCircuit (baseline)
+- Median: 0.68 ms
+- P95: 0.85 ms
+- P99: 0.87 ms
+- CPU time: 0.67 ms (user: 0.37, sys: 0.3)
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.0 KB/invocation
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Stoplight (circuit breaker)
+- Median: 0.69 ms
+- P95: 0.92 ms
+- P99: 1.0 ms
+- CPU time: 0.68 ms (user: 0.37, sys: 0.31)
+- RSS before: 87088 KB
+- RSS peak delta: +0 KB
+- RSS avg delta: 0.8 KB/invocation
+- GC objects/invocation: 744
+- Allocated: 650 objects
+- Retained: 12 objects
+
+#### Circuit Overhead
+- Absolute: +0.01 ms
+- Relative: +1.5%
 
 ## Methodology
 
 1. Global warmup: 3 invocations with throwaway clients to
-   warm JIT and server (excluded from metrics)
+   warm JIT and benchmark fixture (excluded from metrics)
 2. All 16 clients pre-warmed (both NullCircuit and Stoplight
    variants) — connections established before any measurement
 3. Examples run in randomized order to avoid bias
@@ -603,7 +603,7 @@ NullCircuit baseline shown first for each client.
    consistency)
 5. 20 timed invocations measure steady-state
    performance with connection reuse — median, P95, P99 reported
-6. Connection establishment overhead (TCP handshake, TLS)
+6. Connection establishment overhead (TCP handshake; no TLS)
    is absorbed during pre-warm, excluded from metrics
 7. CPU time: `Process.times` user+system delta per
    invocation (median reported)
