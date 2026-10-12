@@ -3,6 +3,7 @@ require "api_client"
 require "api_client/processing/ractor_pool"
 
 RSpec.describe ApiClient::Processing::RactorPool,
+  :experimental_ractor,
   skip: !defined?(Ractor::Port) && "Ractor::Port requires Ruby 4.0+" do
   subject(:pool) { described_class.new(size: 2) }
 

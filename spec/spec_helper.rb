@@ -1,24 +1,6 @@
 # Coverage must load before application code
 require_relative "support/coverage_config"
 
-# Silence Ruby IO::Buffer experimental warning (from async gem)
-Warning[:experimental] = false
-
-# Suppress compatibility warnings from gems
-module WarningFilter
-  SUPPRESSED = [
-    "method redefined; discarding old eval_binding",
-    "Could not load native event selector"
-  ].freeze
-
-  def warn(message, *args, **kwargs)
-    return if message.is_a?(String) && SUPPRESSED.any? { |s| message.include?(s) }
-
-    super
-  end
-end
-Warning.extend(WarningFilter)
-
 # Core dependencies
 require "amazing_print"
 
@@ -48,16 +30,8 @@ $LOAD_PATH.unshift File.expand_path("../lib", __dir__)
 require "api_client"
 
 # Eager-load UriPolicy and pre-populate the SSRF blocked-hosts list
-# in the main thread.  Prevents Zeitwerk autoloading inside Falcon
-# worker threads (Async::Container::Threaded), which can segfault
-# when Kernel#require races with native extensions (async/kqueue).
+# before specs run so autoloading does not occur inside concurrent code.
 ApiClient::UriPolicy.default_blocked_hosts
-
-# Force libcurl global initialisation in the main thread.
-# curl_global_init() is not thread-safe; if Ethon lazy-inits it for
-# the first time inside a Puma/server worker thread the process segfaults.
-require "ethon"
-Ethon::Curl.init
 
 # Load support files (excluding dummy Rails app internals)
 Dir[File.join(__dir__, "support", "*.rb")].sort.each { |f| require f }
@@ -125,9 +99,14 @@ RSpec.configure do |config|
   # metadata: `fit`, `fdescribe` and `fcontext`, respectively.
   config.filter_run_when_matching :focus
 
-  # Exclude benchmarks and profiling by default
-  # Run with: rspec --tag benchmark  or  rspec --tag profile
-  config.filter_run_excluding :benchmark, :profile
+  # Exclude opt-in performance, experimental, and live-transport suites by default.
+  # Run with: rspec --tag benchmark, --tag profile, --tag experimental_ractor,
+  #           --tag server_compat, or --tag chaos
+  config.filter_run_excluding :benchmark, :profile, :experimental_ractor, :server_compat, :chaos
+
+  config.before(:each, :experimental_ractor) do
+    skip "Requires Ruby 4.0+ with Ractor::Port" unless defined?(Ractor::Port)
+  end
 
   # Allows RSpec to persist some state between runs in order to support
   # the `--only-failures` and `--next-failure` CLI options. We recommend

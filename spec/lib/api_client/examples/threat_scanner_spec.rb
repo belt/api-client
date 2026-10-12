@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe ApiClient::Examples::ThreatScanner do
+RSpec.describe ApiClient::Examples::ThreatScanner, :experimental_ractor do
   it_behaves_like "canonical request flow example" do
     let(:example_class) { described_class }
     let(:invoke_method) { ->(c) { c.scan(indicator_id: "IOC-8842") } }

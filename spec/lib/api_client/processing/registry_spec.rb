@@ -13,6 +13,10 @@ RSpec.describe ApiClient::Processing::Registry do
       result = described_class.detect
       expect(result).to be_nil.or be_a(Symbol)
     end
+
+    it "does not auto-select experimental Ractor processing" do
+      expect(described_class.detect).not_to eq(:ractor)
+    end
   end
 
   describe ".available?" do
@@ -24,8 +28,9 @@ RSpec.describe ApiClient::Processing::Registry do
       expect(described_class.available?(:unknown)).to be false
     end
 
-    it "returns truthy for ractor on Ruby 3+" do
-      expect(described_class.available?(:ractor)).to be_truthy
+    it "reports Ractor only when the required port API is available" do
+      port_api_available = !defined?(Ractor::Port).nil?
+      expect(described_class.available?(:ractor) == port_api_available).to be(true)
     end
 
     it "returns truthy for concurrent when gem available" do

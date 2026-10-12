@@ -17,6 +17,8 @@ Rails.application.configure do
 
   # Configure public file server for tests with cache-control for performance.
   config.public_file_server.headers = {"cache-control" => "public, max-age=3600"}
+  # Keep the Railtie's debug notification subscriber opt-in during the suite.
+  config.log_level = :info
 
   # Show full error reports.
   config.consider_all_requests_local = true

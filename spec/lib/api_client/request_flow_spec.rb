@@ -137,7 +137,7 @@ RSpec.describe ApiClient::RequestFlow, :integration do
         expect(results).to all(start_with("Post"))
       end
 
-      it "can parallel_map fan_out results" do
+      it "can parallel_map fan_out results", :experimental_ractor do
         results = request_flow
           .fetch(:get, "/users/1")
           .then { |r| JSON.parse(r.body)["post_ids"] }
@@ -149,7 +149,7 @@ RSpec.describe ApiClient::RequestFlow, :integration do
         expect(results.map { |r| r["id"] }).to eq([11, 12, 13])
       end
 
-      it "can chain parallel_map with block" do
+      it "can chain parallel_map with block", :experimental_ractor do
         results = request_flow
           .fetch(:get, "/users/1")
           .then { |r| JSON.parse(r.body)["post_ids"] }
