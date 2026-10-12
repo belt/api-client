@@ -1,49 +1,23 @@
-# Project-scoped tool versions — managed by mise
-# Ruby stays in .tool-versions for Bundler compatibility (Gemfile reads it)
-#
-# Install: mise install
-# Verify:  mise ls
+# Project-scoped tool versions and local native-build settings
+min_version = "2025.1.0"
 
 [tools]
-# ─── Language Runtime ───────────────────────────────────────────────────
-ruby = "3.4.9"
-
-# ─── Linters & Formatters ──────────────────────────────────────────────
+# Keep this pin aligned with .tool-versions; CI tests Ruby 3.4 and 4.0.
+ruby = "4.0.7"
 shellcheck = "0.11.0"
-shfmt = "3.12.0"
-
-# ─── Data Processing ───────────────────────────────────────────────────
-"asdf:mise-plugins/asdf-jq" = "1.8.1"
-
-# mikefarah/yq — use system-installed binary (e.g. Homebrew, Docker image)
-"ubi:mikefarah/yq" = "path:/usr/local/bin/yq"
-
-# ─── Testing ────────────────────────────────────────────────────────────
+shfmt = "3.14.1"
+jq = "1.8.2"
 shellspec = "0.28.1"
 
 [env]
-# Force Apple Clang for Ruby/native extension builds — Homebrew LLVM
-# lacks RUBY_FUNCTION_NAME_STRING, causing vm_callinfo.h failures.
-# Also prevents sccache from wrapping the wrong compiler.
+# Use Apple Clang for native extensions on this macOS host; Homebrew LLVM
+# has caused MRI header incompatibilities.
 CC = "/usr/bin/clang"
 CXX = "/usr/bin/clang++"
 
-# freeze string literals by default
-RUBYOPT = "--enable=frozen-string-literal"
+# Keep RUBYOPT unset: globally freezing strings affects dependencies such as
+# Rantly. Use per-file frozen_string_literal pragmas for project-owned code.
 
-# freeze string literals by default with debugging
-# RUBYOPT='--enable=frozen-string-literal --debug=frozen-string-literal'
-
-# JIT enabled programmatically after gem loading in application/test boot.
-# See: spec/spec_helper.rb and lib/api_client/jit.rb
-# RUBY_YJIT_ENABLE=1
-
-# Rugged (libgit2) native extension build flags
-# These env vars are read by rugged's ext/rugged/extconf.rb during compilation.
-# CC: bypass sccache which breaks CMake compiler detection
-# CFLAGS: -O3 already default in extconf.rb; -march=native tunes for local CPU
-# CMAKE_FLAGS: enable SHA-256, Release build, force Makefiles (Ninja/gmake mismatch)
-# export CC=/usr/bin/gcc
-# export CPP=/usr/bin/g++
-# export CFLAGS="..."
-# export CMAKE_FLAGS="..."
+# Used only when the process loads jemalloc; the macOS Ruby build normally uses
+# the system allocator. Keep aligned with the other projects' jemalloc tuning.
+MALLOC_CONF = "dirty_decay_ms:1000,narenas:2"
