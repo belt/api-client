@@ -17,7 +17,7 @@ All participants are expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md
 
 ### Prerequisites
 
-- Ruby 3.2 or newer (CI tests 3.2, 3.3, 3.4, and 4.0)
+- Ruby 3.4 or newer (CI tests 3.4 and 4.0)
 - Bundler (version managed via `Gemfile.lock`)
 
 ### Setup

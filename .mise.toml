@@ -6,7 +6,7 @@
 
 [tools]
 # ─── Language Runtime ───────────────────────────────────────────────────
-ruby = "3.4.8"
+ruby = "3.4.9"
 
 # ─── Linters & Formatters ──────────────────────────────────────────────
 shellcheck = "0.11.0"
@@ -47,4 +47,3 @@ RUBYOPT = "--enable=frozen-string-literal"
 # export CPP=/usr/bin/g++
 # export CFLAGS="..."
 # export CMAKE_FLAGS="..."
-

@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.homepage = "https://github.com/belt/api-client"
   # spec.installed_by_version = "3.0.9" if spec.respond_to? :installed_by_version
 
-  spec.required_ruby_version = Gem::Requirement.new(">= 3.2.0")
+  spec.required_ruby_version = Gem::Requirement.new(">= 3.4.0")
   spec.required_rubygems_version = Gem::Requirement.new(">= 3") if spec.respond_to? :required_rubygems_version=
 
   if spec.respond_to? :metadata=
@@ -40,7 +40,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb"] + %w[LICENSE SECURITY.md README.md]
 
   # Runtime Convenience dependencies
-  spec.add_runtime_dependency "activesupport", ">= 6.0"
+  spec.add_runtime_dependency "activesupport", ">= 8.1"
   spec.add_runtime_dependency "zeitwerk", ">= 2.7"
 
   # Runtime Ikigai dependencies

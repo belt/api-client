@@ -34,8 +34,7 @@ target "matrix" {
   name = "${targ}-${replace(item.ruby, ".", "-")}-${item.jit}"
   matrix = {
     item = [
-      { ruby = "3.3.10", jit = "yjit" },
-      { ruby = "3.4.8", jit = "yjit" },
+      { ruby = "3.4.9", jit = "yjit" },
       { ruby = "4.0.1", jit = "yjit" },
       { ruby = "4.0.1", jit = "zjit" }
     ]
