@@ -2,7 +2,7 @@
 
 # Multi-stage: base → production | development
 # Ruby 3.x/4.x via RUBY_VERSION. Gem manager: Ore Light.
-ARG RUBY_VERSION=3.4.8
+ARG RUBY_VERSION=3.4.9
 
 # Native extension build toolchain — shared by gems-base and development.
 # Defined globally so both stages reference the same list (keep in sync).
@@ -10,7 +10,7 @@ ARG BUILD_PACKAGES="build-essential cmake pkg-config \
     libcurl4-openssl-dev libffi-dev libgit2-dev libyaml-dev git"
 
 # Digest-pin for CI reproducibility. Obtain via:
-#   docker manifest inspect ruby:3.4.8-slim \
+#   docker manifest inspect ruby:3.4.9-slim \
 #     | jq -r '.config.digest'
 # Leave empty for local dev (falls back to tag-only).
 # CI/versioned builds should set RUBY_DIGEST to ensure immutable base

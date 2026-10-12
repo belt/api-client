@@ -50,8 +50,6 @@ body:
     attributes:
       label: Ruby Version
       options:
-        - "3.2"
-        - "3.3"
         - "3.4"
         - "4.0"
         - Other (specify in description)

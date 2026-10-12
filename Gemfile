@@ -1,8 +1,8 @@
 source "https://rubygems.org"
 
 # Ruby version enforced locally via .tool-versions (rv/mise/asdf).
-# CI matrix tests across 3.2, 3.3, 3.4.
-# Gemspec declares required_ruby_version >= 3.2.0.
+# CI matrix tests across 3.4 and 4.0.
+# Gemspec declares required_ruby_version >= 3.4.0.
 
 # Load runtime dependencies from gemspec file
 gemspec
@@ -39,7 +39,7 @@ end
 
 group :test do
   # api-client integrates with Rails but does not require it for operations
-  gem "rails", "~> 8.0"
+  gem "rails", "~> 8.1"
   gem "rspec-rails", ">= 7.0"  # Rails-specific RSpec matchers
 
   # HTTP servers for integration tests

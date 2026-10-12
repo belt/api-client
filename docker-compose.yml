@@ -17,7 +17,7 @@ services:
       context: .
       target: production
       args:
-        RUBY_VERSION: "${RUBY_VERSION:-3.4.8}"
+        RUBY_VERSION: "${RUBY_VERSION:-3.4.9}"
         # YJIT/ZJIT are mutually exclusive; set one, blank the other
         RUBY_YJIT_ENABLE: "${RUBY_YJIT_ENABLE:-1}"
         RUBY_ZJIT_ENABLE: "${RUBY_ZJIT_ENABLE:-}"
@@ -31,7 +31,7 @@ services:
         - type=registry,ref=api-client:buildcache-production
       cache_to:
         - type=registry,ref=api-client:buildcache-production,mode=max
-    image: "api-client:production-ruby${RUBY_VERSION:-3.4.8}"
+    image: "api-client:production-ruby${RUBY_VERSION:-3.4.9}"
     profiles:
       - production
     restart: unless-stopped
@@ -73,7 +73,7 @@ services:
       context: .
       target: development
       args:
-        RUBY_VERSION: "${RUBY_VERSION:-3.4.8}"
+        RUBY_VERSION: "${RUBY_VERSION:-3.4.9}"
         RUBY_YJIT_ENABLE: "${RUBY_YJIT_ENABLE:-1}"
         RUBY_ZJIT_ENABLE: "${RUBY_ZJIT_ENABLE:-}"
         BUILD_DATE: "${BUILD_DATE:-}"
@@ -85,7 +85,7 @@ services:
         - type=registry,ref=api-client:buildcache-development
       cache_to:
         - type=registry,ref=api-client:buildcache-development,mode=max
-    image: "api-client:development-ruby${RUBY_VERSION:-3.4.8}"
+    image: "api-client:development-ruby${RUBY_VERSION:-3.4.9}"
     profiles:
       - development
     # on-failure avoids restart loops during interactive debugging

@@ -163,9 +163,9 @@ git config core.hooksPath .githooks
 
 ## Requirements
 
-- Ruby ≥ 3.2
+- Ruby ≥ 3.4
 - Faraday ≥ 2.0
-- ActiveSupport ≥ 6.0
+- ActiveSupport ≥ 8.1
 
 ### Optional
 
