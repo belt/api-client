@@ -8,11 +8,12 @@ module ApiClient
     # Registry for processors with auto-detection and graceful fallback
     #
     # Provides unified processor discovery, availability checking, and
-    # class resolution. Detection order (best parallelism first):
-    # 1. Ractor - True parallelism, isolated memory (Ruby 3+)
-    # 2. Async - Fork-based parallelism via async-container
-    # 3. Concurrent - Thread pool (true parallelism on JRuby/TruffleRuby)
-    # 4. Sequential fallback
+    # class resolution. Experimental Ractor processing is explicit-only.
+    # Default detection order:
+    # 1. Async - Fork-based parallelism via async-container
+    # 2. Concurrent - Thread pool (true parallelism on JRuby/TruffleRuby)
+    # 3. Sequential fallback
+    # Ractor is available only through explicit selection.
     #
     # @example Auto-detect best processor
     #   processor_sym = Processing::Registry.detect
@@ -22,7 +23,7 @@ module ApiClient
     module Registry
       extend Concerns::RegistryBase
 
-      PROCESSORS = %i[ractor async concurrent sequential].freeze
+      PROCESSORS = %i[async concurrent sequential ractor].freeze
 
       self.registry_items = PROCESSORS
       self.fallback_item = :sequential
@@ -59,7 +60,7 @@ module ApiClient
 
         def check_availability(processor)
           case processor
-          when :ractor then RUBY_VERSION >= "3.0" && !defined?(Ractor).nil?
+          when :ractor then !defined?(Ractor::Port).nil?
           when :async then !defined?(::Async::Container).nil?
           when :concurrent then !defined?(::Concurrent).nil?
           when :sequential then true

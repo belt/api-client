@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # LegacyExporter: /legacy/v1/:resource/pages → page_ids,
       #   /legacy/v1/:resource/pages/:id → records

@@ -1,9 +1,9 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
-      # Core routes used by integration, hardening, fuzz, and unit specs.
+      # Core response fixtures used by workflow and request specs.
       #
       # Handles: /health, /users, /posts, /echo, /delay, /error, /circuit
       class Core
@@ -36,7 +36,7 @@ module Support
             json(200, id: id, name: "User #{id}", post_ids: [1, 2, 3].map { |n| (id * 10) + n })
           when "POST"
             body = parse_body(request)
-            json(201, {id: rand(1000), **body})
+            json(201, {id: 100, **body})
           else
             json(405, error: "Method not allowed")
           end
@@ -62,9 +62,6 @@ module Support
 
         def handle_delay(request)
           seconds = request.path_info.split("/").last.to_f
-          # Use Kernel.sleep to block the thread and trigger read timeouts
-          # Async::Task.current.sleep doesn't block TCP which won't trigger timeouts
-          Kernel.sleep(seconds)
           json(200, delayed: seconds)
         end
 

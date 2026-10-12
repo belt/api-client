@@ -1,10 +1,9 @@
 namespace :examples do
   desc "Collect per-client metrics for all 16 example clients and write doc/example-metrics.md"
   task :metrics do
-    Warning[:experimental] = false
     require_relative "../../lib/api_client"
     require "async/http/endpoint"
-    require_relative "../../spec/support/test_server/server"
+    require_relative "../../spec/support/mock_api/benchmark_server"
 
     memory_profiler_available = begin
       require "memory_profiler"
@@ -109,7 +108,7 @@ namespace :examples do
 
     # Build and warm a client: instantiate + one invocation to establish connection
     build_warm_client = lambda do |entry, base_url, circuit_enabled: true|
-      client_opts = {service_uri: base_url}
+      client_opts = {service_uri: base_url, uri_policy_enabled: false}
       client_opts[:circuit] = {enabled: false} unless circuit_enabled
       client = entry[:klass].new(**client_opts)
       entry[:invoke].call(client) # establish connection
@@ -194,28 +193,23 @@ namespace :examples do
     require "console"
     Console.logger.off!
 
-    puts "Starting Falcon test server..."
-    server = Support::TestServer.new.start
+    puts "Starting Puma loopback benchmark fixture..."
+    server = Support::MockApi::BenchmarkServer.new.start
     base_url = server.base_url
-    puts "Server ready at #{base_url} (#{server.worker_count} workers)"
-
-    # Redirect stderr after server startup to suppress Falcon warnings
-    # during benchmark iterations (restore in ensure block)
-    original_stderr = $stderr
-    $stderr = File.open(File::NULL, "w")
+    puts "Benchmark fixture ready at #{base_url}"
 
     begin
       # Global warmup: run one example to warm JIT and server
       # Use a throwaway client to avoid connection pooling affecting measurements
-      puts "Warming up (JIT and server)..."
+      puts "Warming up (JIT and benchmark fixture)..."
       warmup_example = examples.first
       3.times do
         warmup_client = warmup_example[1][:klass].new(
-          service_uri: base_url, circuit: {enabled: false}
+          service_uri: base_url, uri_policy_enabled: false, circuit: {enabled: false}
         )
         warmup_example[1][:invoke].call(warmup_client)
       end
-      puts "  JIT and test server warmed"
+      puts "  JIT and benchmark fixture warmed"
 
       # Randomize example order for unbiased measurement
       randomized_examples = examples.to_a.shuffle
@@ -261,8 +255,6 @@ namespace :examples do
       has_alloc = all_metrics.any? { |m| m[:allocated_objects] }
       yjit = defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?
       date = Time.now.strftime("%Y-%m-%d")
-      workers = server.worker_count
-
       lines = []
 
       # Header
@@ -277,7 +269,7 @@ namespace :examples do
         "## Example Clients Metrics",
         "",
         "Performance metrics for the 16 canonical `RequestFlow`",
-        "examples, measured against a custom Falcon test server on",
+        "examples, measured against an isolated Puma benchmark fixture on",
         "localhost.",
         "",
         "Regenerate with:",
@@ -300,8 +292,8 @@ namespace :examples do
         "```text",
         "Ruby:    #{RUBY_VERSION} (#{RUBY_PLATFORM})",
         "YJIT:    #{yjit ? "enabled" : "disabled"}",
-        "Server:  Falcon (Async::Container::Threaded, #{workers} workers)",
-        "Network: loopback (127.0.0.1)",
+        "Server:  Puma (loopback only; benchmark task, not RSpec)",
+        "Network: loopback (127.0.0.1; benchmark task only)",
         "```",
         ""
       )
@@ -427,7 +419,7 @@ namespace :examples do
       lines.push(
         "## Methodology", "",
         "1. Global warmup: 3 invocations with throwaway clients to",
-        "   warm JIT and server (excluded from metrics)",
+        "   warm JIT and benchmark fixture (excluded from metrics)",
         "2. All 16 clients pre-warmed (both NullCircuit and Stoplight",
         "   variants) — connections established before any measurement",
         "3. Examples run in randomized order to avoid bias",
@@ -436,7 +428,7 @@ namespace :examples do
         "   consistency)",
         "5. #{iterations} timed invocations measure steady-state",
         "   performance with connection reuse — median, P95, P99 reported",
-        "6. Connection establishment overhead (TCP handshake, TLS)",
+        "6. Connection establishment overhead (TCP handshake; no TLS)",
         "   is absorbed during pre-warm, excluded from metrics",
         "7. CPU time: `Process.times` user+system delta per",
         "   invocation (median reported)",
@@ -474,8 +466,6 @@ namespace :examples do
       puts "\nWrote #{doc_path} (#{all_metrics.size} clients, #{null_circuit_metrics.size} NullCircuit baselines)"
     ensure
       server.stop
-      $stderr.close unless $stderr == original_stderr
-      $stderr = original_stderr
     end
   end
 end

@@ -17,7 +17,7 @@ Sequential-to-parallel workflow chains. See [onboarding.processing.md](onboardin
 |--------------|----------------------------------|
 | Pattern      | fetch → transform → fan-out      |
 | Concurrency  | Via adapter (auto-detected)      |
-| CPU parallel | Via processor (auto-detected)    |
+| CPU parallel | Via processor (auto-detected; Ractor is explicit opt-in) |
 | Streaming    | Process responses as they arrive |
 
 ## Basic Usage
@@ -39,7 +39,7 @@ posts = client.request_flow
 | `fan_out`        | Concurrent requests from array |
 | `filter`         | Filter array items             |
 | `map`            | Transform each item            |
-| `parallel_map`   | Ractor CPU parallelism         |
+| `parallel_map`   | Experimental Ractor CPU parallelism (explicit opt-in) |
 | `async_map`      | Fork CPU parallelism           |
 | `concurrent_map` | Thread CPU parallelism         |
 | `process`        | Auto-detect best processor     |
@@ -150,10 +150,10 @@ posts = client.request_flow
   .fetch(:get, '/users/123')
   .then { |r| JSON.parse(r.body)['post_ids'] }
   .fan_out { |id| { method: :get, path: "/posts/#{id}" } }
-  .parallel_map(recipe: Transforms::Recipe.default)   # Ractor
+  .parallel_map(recipe: Transforms::Recipe.default)   # explicit experimental Ractor opt-in
   # OR .async_map(...)        # Fork
   # OR .concurrent_map(...)   # Thread
-  # OR .process(...)          # Auto-detect best processor
+  # OR .process(...)          # Auto-detects Async, Concurrent, or Sequential
   .collect
 ```
 

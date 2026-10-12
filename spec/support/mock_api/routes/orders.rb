@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # OrderFulfiller: /orders/:id → line_item_ids, /inventory/:id → stock check
       class Orders

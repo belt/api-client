@@ -14,6 +14,7 @@ RSpec.describe "Adapter performance", :benchmark, :integration do
       async_adapter = ApiClient::Adapters::AsyncAdapter.new(
         build(:api_client_configuration, service_uri: base_url)
       )
+      stub_async_http(async_adapter)
       concurrent_adapter = ApiClient::Adapters::Concurrent.new(
         build(:api_client_configuration, service_uri: base_url)
       )
@@ -31,7 +32,7 @@ RSpec.describe "Adapter performance", :benchmark, :integration do
 
   describe "sequential vs batch" do
     it "compares execution strategies" do
-      client = client_for_server
+      client = client_for_mock_api
 
       compare_performance do |x|
         x.report("sequential") { client.sequential(requests) }
@@ -42,7 +43,7 @@ RSpec.describe "Adapter performance", :benchmark, :integration do
 
   describe "single request overhead" do
     it "measures single request latency" do
-      client = client_for_server
+      client = client_for_mock_api
       single_request = [{method: :get, path: "/health"}]
 
       compare_performance do |x|

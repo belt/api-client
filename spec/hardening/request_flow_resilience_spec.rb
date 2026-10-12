@@ -2,7 +2,7 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe ApiClient::RequestFlow, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   describe "request flow error recovery" do
     it "returns 404 response for missing paths" do

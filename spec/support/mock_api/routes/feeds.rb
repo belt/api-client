@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # FeedIngestor: /feeds/:id/sources → source_urls,
       #   /src/:id → feed entries

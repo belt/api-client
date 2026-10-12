@@ -10,11 +10,10 @@ Gem::Specification.new do |spec|
   spec.required_rubygems_version = Gem::Requirement.new(">= 3") if spec.respond_to? :required_rubygems_version=
 
   if spec.respond_to? :metadata=
-    base_uri = "https://github.com/belt/api-client/blob/v#{spec.version}"
+    release_uri = "https://github.com/belt/api-client/tree/v#{spec.version}"
     meta = {
       "homepage_uri" => spec.homepage,
-      "changelog_uri" => "#{base_uri}/api-client/CHANGELOG.md",
-      "source_code_uri" => "#{base_uri}/api-client"
+      "source_code_uri" => release_uri
     }
 
     # Prevent pushing this gem to RubyGems.org. To allow pushes either set

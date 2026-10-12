@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # MetricsCollector: /metrics/namespaces/:ns/sources → source_ids,
       #   /sources/:id/latest → metric data

@@ -107,7 +107,7 @@ module ApiClient
       self
     end
 
-    # Add a parallel map step (Ractor-powered for CPU-bound work)
+    # Add an explicit experimental Ractor map step for CPU-bound work
     # @param recipe [Transforms::Recipe] Extraction and transformation recipe
     # @param errors [ErrorStrategy, nil] Error handling strategy
     # @yield [transformed_item] Optional block for post-transform processing
@@ -136,8 +136,9 @@ module ApiClient
       add_processor_step(:concurrent_map, recipe:, errors:, block:)
     end
 
-    # Add a process step (auto-detects best processor for CPU-bound work)
-    # Uses Processing::Registry to detect: Ractor > Async > Concurrent > Sequential
+    # Add a process step (auto-detects a non-experimental processor)
+    # Uses Processing::Registry to detect: Async > Concurrent > Sequential.
+    # Ractor remains available through the explicit parallel_map step.
     # @param recipe [Transforms::Recipe] Extraction and transformation recipe
     # @param errors [ErrorStrategy, nil] Error handling strategy
     # @yield [transformed_item] Optional block for post-transform processing

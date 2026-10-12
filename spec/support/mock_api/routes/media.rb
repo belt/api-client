@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # MediaTranscoder: /media/assets/:id/variants → variant_ids,
       #   /transcode/:id → transcoded output

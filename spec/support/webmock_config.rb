@@ -5,7 +5,7 @@
 # `require "webmock"` loads ALL HTTP adapters unconditionally, including
 # async_http_client_adapter which pulls in the entire async gem stack (~6s).
 # This project only needs net_http (Faraday) and typhoeus adapters.
-# Async tests use Async::HTTP::Mock directly (see support/mock_http_helper.rb).
+# Async tests use an injected fake transport (see support/async_http_mock.rb).
 
 # WebMock core (no adapters)
 require "singleton"
@@ -108,6 +108,18 @@ RSpec.configure do |config|
 
   config.before(:suite) { WebMock.enable! }
   config.after(:suite) { WebMock.disable! }
+  config.around(:example, :server_compat) do |example|
+    WebMock.disable_net_connect!(allow: ["127.0.0.1"])
+    example.run
+  ensure
+    WebMock.disable_net_connect!
+  end
+  config.around(:example, :chaos) do |example|
+    WebMock.disable_net_connect!(allow: ["127.0.0.1"])
+    example.run
+  ensure
+    WebMock.disable_net_connect!
+  end
   config.around { |example|
     example.run
     WebMock.reset!
@@ -116,11 +128,5 @@ end
 
 WebMock::AssertionFailure.error_class = RSpec::Expectations::ExpectationNotMetError
 
-# Allow localhost for TestServer, block external requests
-WebMock.disable_net_connect!(
-  allow_localhost: true,
-  allow: [
-    /127\.0\.0\.1/,
-    /localhost/
-  ]
-)
+# All HTTP requests in specs must have an explicit WebMock response.
+WebMock.disable_net_connect!

@@ -19,11 +19,9 @@ RSpec.describe ApiClient::Orchestrators::Sequential, :integration do
     context "with sequential ordering" do
       let(:requests) { 3.times.map { |i| {method: :get, path: "/users/#{i + 1}", params: {seq: i}} } }
 
-      before { test_server.clear_requests }
-
       it "executes in order" do
         executor.execute(requests)
-        paths = test_server.requests.map { |r| r[:path].split("?").first }
+        paths = MockApiHolder.instance.requests.map { |r| r[:path].split("?").first }
         expect(paths).to eq(["/users/1", "/users/2", "/users/3"])
       end
     end

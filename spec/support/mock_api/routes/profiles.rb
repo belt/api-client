@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # UserEnricher: /users/segments/:id/members → user_ids,
       #   /profiles/:id → enriched profile

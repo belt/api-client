@@ -97,7 +97,12 @@ RSpec.describe ApiClient::Connection, :integration do
       end
 
       it "measures duration accurately" do
-        connection.request(:get, "/delay/0.1", params: {_t: Time.now.to_f})
+        allow(Process).to receive(:clock_gettime)
+          .with(Process::CLOCK_MONOTONIC)
+          .and_return(1.0, 1.2)
+
+        connection.request(:get, "/delay/0.1")
+
         expect(events.first[:duration]).to be >= 0.1
       end
     end
@@ -188,7 +193,9 @@ RSpec.describe ApiClient::Connection, :integration do
     end
 
     context "with on_error: :raise (default)" do
-      let(:config) { build(:api_client_configuration, service_uri: stubbed_url) }
+      let(:config) do
+        build(:api_client_configuration, service_uri: stubbed_url).tap { |c| c.retry.max = 0 }
+      end
 
       it "raises on connection error" do
         expect { connection.get("/health") }.to raise_error(Faraday::ConnectionFailed)
@@ -196,7 +203,10 @@ RSpec.describe ApiClient::Connection, :integration do
     end
 
     context "with on_error: :return" do
-      let(:config) { build(:api_client_configuration, service_uri: stubbed_url, on_error: :return) }
+      let(:config) do
+        build(:api_client_configuration, service_uri: stubbed_url, on_error: :return)
+          .tap { |c| c.retry.max = 0 }
+      end
 
       it "returns a Faraday::Response" do
         expect(connection.get("/health")).to be_a(Faraday::Response)
@@ -216,6 +226,7 @@ RSpec.describe ApiClient::Connection, :integration do
       let(:logger) { Logger.new(log_output) }
       let(:config) do
         build(:api_client_configuration, service_uri: stubbed_url).tap do |c|
+          c.retry.max = 0
           c.on_error = :log_and_return
           c.logger = logger
         end

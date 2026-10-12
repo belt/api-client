@@ -1,7 +1,7 @@
 require_relative "base"
 
 module Support
-  class TestServer
+  class MockApi
     module Routes
       # PayReconciler: /payments/batches/:id/gateways → gateway_ids,
       #   /gateways/:id/settlements → transaction records

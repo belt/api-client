@@ -13,11 +13,13 @@ CPU-parallel response processing.
 
 ## Processor Selection
 
-`Processing::Registry.detect` → Ractor > AsyncProcessor > ConcurrentProcessor > Sequential
+`Processing::Registry.detect` → AsyncProcessor > ConcurrentProcessor > Sequential.
+Experimental Ractor processing is opt-in through `parallel_map` or
+`RactorProcessor` and is not selected by `process`.
 
 | Processor  | Parallelism       | Platform  | Best For                   |
 |------------|-------------------|-----------|----------------------------|
-| Ractor     | True (per-Ractor) | Ruby 3.0+ | Fine-grained, experimental |
+| Ractor     | True (per-Ractor) | Ruby 4.0+ | Explicit opt-in; experimental |
 | Async      | True (fork)       | Unix      | Production, coarse-grained |
 | Concurrent | GVL-limited*      | All       | JRuby, mixed I/O+CPU       |
 
@@ -65,7 +67,7 @@ client.request_flow
   .fetch(:get, '/users/123')
   .then { |r| JSON.parse(r.body)['post_ids'] }
   .fan_out { |id| { method: :get, path: "/posts/#{id}" } }
-  .parallel_map(recipe: Transforms::Recipe.default)   # Ractor
+  .parallel_map(recipe: Transforms::Recipe.default)   # explicit experimental Ractor opt-in
   # OR .async_map(...)        # Fork
   # OR .concurrent_map(...)   # Thread
   # OR .process(...)          # Auto-detect best processor
@@ -117,7 +119,8 @@ total = processor.reduce(responses, 0) { |sum, d| sum + d['count'] }
 
 ## Auto-Detection
 
-Use `process` step in RequestFlow to auto-detect the best available processor:
+Use `process` to auto-detect a non-experimental processor. To opt into Ractor,
+use `parallel_map` explicitly:
 
 ```ruby
 client.request_flow

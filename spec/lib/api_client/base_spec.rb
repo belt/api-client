@@ -2,7 +2,7 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe ApiClient::Base, :integration do
-  subject(:client) { client_for_server }
+  subject(:client) { client_for_mock_api }
 
   describe "#initialize" do
     it "builds config" do
@@ -18,7 +18,7 @@ RSpec.describe ApiClient::Base, :integration do
     end
 
     context "with overrides" do
-      subject(:client) { client_for_server(read_timeout: 99) }
+      subject(:client) { client_for_mock_api(read_timeout: 99) }
 
       it "applies overrides to config" do
         expect(client.config.read_timeout).to eq(99)

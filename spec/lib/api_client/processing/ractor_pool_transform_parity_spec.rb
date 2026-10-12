@@ -3,6 +3,7 @@ require "api_client/transforms"
 require "api_client/processing/ractor_pool"
 
 RSpec.describe "RactorPool transform parity with Transforms::REGISTRY",
+  :experimental_ractor,
   skip: !defined?(Ractor::Port) && "Ractor::Port requires Ruby 4.0+" do
   subject(:pool) { ApiClient::Processing::RactorPool.new(size: 2) }
 

@@ -7,9 +7,11 @@ parent: "onboarding.processing.md"
 semantic_version: "1.0"
 last_updated_at: "2026-02-06"
 ---
-# Ractor Processor
+# Experimental Ractor Processor
 
-True CPU parallelism (Ruby 3.0+). See [onboarding.processing.md](onboarding.processing.md).
+True CPU parallelism through Ruby's experimental Ractor API (Ruby 4.0+ for
+`Ractor::Port`). Ractor is not selected by automatic processor detection.
+See [onboarding.processing.md](onboarding.processing.md).
 
 ## Installation
 
@@ -22,7 +24,7 @@ No additional gems (Ruby 3.0+).
 | Parallelism  | True (bypasses GVL)        |
 | Memory model | Isolated, explicit sharing |
 | Use case     | CPU-bound transforms       |
-| Ruby         | 3.0+ (experimental)        |
+| Ruby         | 4.0+ (experimental)        |
 | Restrictions | Shareable data only        |
 
 ## When to Use
@@ -58,5 +60,11 @@ RactorProcessor.new(pool: custom_pool)               # custom
 ## Availability
 
 ```ruby
-ApiClient::Processing::RactorProcessor.available?  # => true on Ruby 3.0+
+ApiClient::Processing::Registry.available?(:ractor) # => true when Ractor::Port exists
 ```
+
+Use `RequestFlow#parallel_map` or `RactorProcessor` explicitly to opt in. The
+default suite excludes the experimental Ractor examples; run them with
+`bundle exec rspec --tag experimental_ractor` to exercise the feature and see
+Ruby's experimental API warnings. On Ruby versions without `Ractor::Port`, the
+tagged examples are skipped.

@@ -2,7 +2,7 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe "Processor fuzzing", :fuzz, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   def mock_responses(count)
     count.times.map do |i|

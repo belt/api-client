@@ -2,11 +2,11 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFilePathFormat
-  subject(:client) { client_for_server }
+  subject(:client) { client_for_mock_api }
 
   describe "end-to-end workflows" do
     describe "sequential and batch requests" do
-      let(:user_response) { client_for_server(read_timeout: 10).get("/users/1") }
+      let(:user_response) { client_for_mock_api(read_timeout: 10).get("/users/1") }
       let(:user) { JSON.parse(user_response.body) }
       let(:post_responses) do
         requests = user["post_ids"].map { |id| {method: :get, path: "/posts/#{id}"} }
@@ -31,7 +31,7 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
     end
 
     describe "request flow workflow" do
-      subject(:client) { client_for_server }
+      subject(:client) { client_for_mock_api }
 
       it_behaves_like "request flow workflow"
     end
@@ -42,7 +42,8 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
         ApiClient::TestClient.new(
           service_uri: base_url,
           test_id: SecureRandom.hex(8),
-          circuit: {threshold: 3, cool_off: 1}
+          circuit: {threshold: 3, cool_off: 1},
+          retry: {interval: 0.001, interval_randomness: 0}
         ).tap(&:reset_circuit!)
       end
 
@@ -90,18 +91,23 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
 
   describe "error scenarios" do
     it "raises on connection failure" do
-      bad_client = described_class.new(service_uri: "http://localhost:1")
+      service_uri = "https://connection-failure.example.test"
+      stub_request(:get, "#{service_uri}/health")
+        .to_raise(Faraday::ConnectionFailed.new("simulated connection failure"))
+      bad_client = described_class.new(service_uri: service_uri, retry: {max: 0})
       expect { bad_client.get("/health") }.to raise_error(Faraday::ConnectionFailed)
     end
 
     it "raises on timeout" do
-      slow_client = client_for_server(adapter: :net_http, read_timeout: 0.05, retry: {max: 0})
-      expect { slow_client.get("/delay/1", params: {_t: Time.now.to_f}) }
+      slow_client = client_for_mock_api(adapter: :net_http, read_timeout: 0.05, retry: {max: 0})
+      stub_request(:get, "#{slow_client.config.service_uri}/delay/1")
+        .to_raise(Faraday::TimeoutError.new("simulated read timeout"))
+      expect { slow_client.get("/delay/1") }
         .to raise_error(Faraday::TimeoutError)
     end
 
     describe "HTTP error responses" do
-      subject(:no_retry_client) { client_for_server(retry: {max: 0}) }
+      subject(:no_retry_client) { client_for_mock_api(retry: {max: 0}) }
 
       it "returns 404 for not found" do
         expect(no_retry_client.get("/error/404").status).to eq(404)

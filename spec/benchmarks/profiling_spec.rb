@@ -3,7 +3,7 @@ require "spec_helper"
 RSpec.describe "Profiling", :integration, :profile do
   describe "CPU profiling" do
     it "profiles batch request execution" do
-      client = client_for_server
+      client = client_for_mock_api
       requests = 20.times.map { |i| {method: :get, path: "/users/#{i + 1}"} }
 
       result = profile_cpu do
@@ -18,7 +18,7 @@ RSpec.describe "Profiling", :integration, :profile do
     it "profiles memory allocations" do
       skip "memory_profiler not available" unless MEMORY_PROFILER_AVAILABLE
 
-      client = client_for_server
+      client = client_for_mock_api
       requests = 10.times.map { |i| {method: :get, path: "/users/#{i + 1}"} }
 
       report = profile_memory do
@@ -32,7 +32,7 @@ RSpec.describe "Profiling", :integration, :profile do
 
   describe "allocation profiling" do
     it "profiles object allocations" do
-      client = client_for_server
+      client = client_for_mock_api
       requests = 5.times.map { |i| {method: :get, path: "/users/#{i + 1}"} }
 
       result = profile_allocations do
@@ -47,7 +47,7 @@ RSpec.describe "Profiling", :integration, :profile do
     it "generates call graph" do
       skip "ruby-prof not available" unless RUBY_PROF_AVAILABLE
 
-      client = client_for_server
+      client = client_for_mock_api
 
       result = profile_trace do
         client.get("/health")

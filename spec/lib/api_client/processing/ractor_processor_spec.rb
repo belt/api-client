@@ -4,6 +4,7 @@ require "api_client/processing/ractor_processor"
 require "faraday"
 
 RSpec.describe ApiClient::Processing::RactorProcessor,
+  :experimental_ractor,
   skip: !defined?(Ractor::Port) && "Ractor::Port requires Ruby 4.0+" do
   # Use instance pool to avoid global state in tests
   subject(:processor) {

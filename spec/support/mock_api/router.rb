@@ -1,9 +1,53 @@
 require "json"
+require "rack"
+require "stringio"
 
 Dir[File.join(__dir__, "routes", "*.rb")].each { |f| require f }
 
 module Support
-  class TestServer
+  class MockApi
+    attr_reader :base_url
+
+    def initialize
+      @base_url = "https://api.example.test"
+      @router = Router.new
+      @requests = []
+      @mutex = Mutex.new
+    end
+
+    def requests
+      @mutex.synchronize { @requests.dup }
+    end
+
+    def clear_requests
+      @mutex.synchronize { @requests.clear }
+    end
+
+    def call(request)
+      uri = request.uri
+      @mutex.synchronize do
+        path = uri.query ? "#{uri.path}?#{uri.query}" : uri.path
+        @requests << {method: request.method, path: path}
+      end
+
+      env = Rack::MockRequest.env_for(uri.to_s,
+        method: request.method.to_s.upcase,
+        input: request.body.to_s)
+      request.headers.each do |name, value|
+        env_key = if name.casecmp("content-type").zero?
+          "CONTENT_TYPE"
+        elsif name.casecmp("content-length").zero?
+          "CONTENT_LENGTH"
+        else
+          "HTTP_#{name.upcase.tr("-", "_")}"
+        end
+        env[env_key] = Array(value).join(", ")
+      end
+
+      status, headers, body = @router.call(Rack::Request.new(env))
+      {status: status, headers: headers, body: body.join}
+    end
+
     # Routes incoming requests to the first matching route module.
     #
     # More-specific routes (HealthClusters, Profiles) are registered before

@@ -27,10 +27,8 @@ module ApiClient
       # Parsed once from config/ssrf_hosts.jsonc on first access, then
       # cached for the lifetime of the process.
       #
-      # Lazy (instead of require-time constant) to avoid a strscan
-      # thread-safety crash when multiple Falcon workers autoload this
-      # module concurrently.  The Mutex guarantees only one thread
-      # executes JSON.parse.
+      # Lazy loading avoids parsing configuration during library boot. The
+      # mutex ensures concurrent callers parse it only once.
       #
       # @see config/ssrf_hosts.jsonc
       # @return [Array<String>] frozen list of blocked hostnames

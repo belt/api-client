@@ -2,10 +2,10 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe "Error handling fuzzing", :fuzz, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   describe "HTTP error status fuzzing" do
-    let(:client) { client_for_server(retry: {max: 0}) }
+    let(:client) { client_for_mock_api(retry: {max: 0}) }
 
     it "handles random 4xx errors gracefully" do
       [400, 401, 403, 404, 405, 409, 422].each do |status|
@@ -53,7 +53,9 @@ RSpec.describe "Error handling fuzzing", :fuzz, :integration do
       property_of {
         array(10) { choose(200, 500) }
       }.check(5) do |pattern|
-        test_client = client_for_server
+        test_client = client_for_mock_api(
+          retry: {interval: 0.001, interval_randomness: 0}
+        )
         test_client.config.circuit.threshold = 100 # High threshold to avoid opening
 
         pattern.each do |status|
@@ -71,14 +73,20 @@ RSpec.describe "Error handling fuzzing", :fuzz, :integration do
 
   describe "timeout error handling" do
     let(:client) do
-      client_for_server(adapter: :net_http, read_timeout: 0.5, retry: {max: 0})
+      client_for_mock_api(adapter: :net_http, read_timeout: 0.5, retry: {max: 0})
     end
 
     it "raises timeout for slow endpoints" do
+      stub_request(:get, "#{client.config.service_uri}/delay/2")
+        .to_raise(Faraday::TimeoutError.new("simulated read timeout"))
+
       expect { client.get("/delay/2") }.to raise_error(Faraday::TimeoutError)
     end
 
     it "succeeds for fast endpoints" do
+      stub_request(:get, "#{client.config.service_uri}/delay/0.1")
+        .to_return(status: 200, body: {delayed: 0.1}.to_json)
+
       response = client.get("/delay/0.1")
       expect(response.status).to eq(200)
     end

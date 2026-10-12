@@ -146,6 +146,7 @@ RSpec.describe Middlewares::Faraday::OpenTelemetryHeaders do
       it "does NOT inject the header (Async uses async-http, not Faraday middleware)" do # rubocop:disable RSpec/ExampleLength
         config = build(:api_client_configuration, service_uri: base_url)
         adapter = ApiClient::Adapters::AsyncAdapter.new(config)
+        stub_async_http(adapter)
 
         responses = adapter.execute([{method: :get, path: "/echo"}])
         body = JSON.parse(responses.first.body)

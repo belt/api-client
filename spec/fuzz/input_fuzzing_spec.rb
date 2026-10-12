@@ -3,7 +3,7 @@ require "api_client"
 
 RSpec.describe ApiClient::Base, :fuzz, :integration do \
   # rubocop:disable RSpec/SpecFilePathFormat,RSpec/MultipleDescribes
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   describe "input fuzzing" do
     describe "path fuzzing" do

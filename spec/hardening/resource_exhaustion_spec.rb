@@ -1,8 +1,24 @@
 require "spec_helper"
 require "api_client"
 
-RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFilePathFormat
-  let(:client) { client_for_server }
+RSpec.describe ApiClient::Base do # rubocop:disable RSpec/SpecFilePathFormat
+  let(:service_uri) { "http://resource-exhaustion-#{SecureRandom.hex(4)}.example.test" }
+  let(:client) { described_class.new(service_uri: service_uri) }
+
+  let(:health_request) do
+    stub_request(:get, "#{service_uri}/health").to_return(status: 200, body: "ok")
+  end
+
+  let(:request_counts) { Hash.new(0) }
+
+  before do
+    health_request
+    stub_request(:get, "#{service_uri}/error/500").to_return(status: 500, body: "error")
+    stub_request(:get, "#{service_uri}/error/503").to_return do
+      request_counts[:unavailable] += 1
+      {status: 503, body: "error"}
+    end
+  end
 
   describe "resource exhaustion protection" do
     describe "batch request limits" do
@@ -15,9 +31,12 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
 
     describe "circuit breaker protection" do
       let(:client) do
-        client_for_server.tap do |c|
+        described_class.new(
+          service_uri: service_uri,
+          retry: {interval: 0.001, interval_randomness: 0}
+        ).tap do |c|
           c.config.circuit.threshold = 3
-          c.config.circuit.cool_off = 1
+          c.config.circuit.cool_off = 60
         end
       end
 
@@ -33,7 +52,7 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
         expect(client.circuit_open?).to be true
       end
 
-      it "fails fast when circuit open" do # rubocop:disable RSpec/ExampleLength
+      it "fails fast when circuit open" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
         3.times {
           begin
             client.get("/error/500")
@@ -41,17 +60,10 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
             nil
           end
         }
+        expect(client.circuit_open?).to be true
 
-        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        begin
-          client.get("/health")
-        rescue
-          nil
-        end
-        elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start
-
-        # Should fail immediately, not wait for timeout
-        expect(elapsed).to be < 0.1
+        expect { client.get("/health") }.to raise_error(ApiClient::CircuitOpenError)
+        expect(health_request).not_to have_been_requested
       end
 
       it "recovers after cool_off period" do # rubocop:disable RSpec/ExampleLength
@@ -74,24 +86,16 @@ RSpec.describe ApiClient::Base, :integration do # rubocop:disable RSpec/SpecFile
 
     describe "retry amplification protection" do
       let(:client) do
-        client_for_server.tap do |c|
-          c.config.retry.max = 2
-          c.config.retry.interval = 0.01
-        end
+        described_class.new(
+          service_uri: service_uri,
+          retry: {max: 2, interval: 0.01}
+        )
       end
 
-      it "limits total retry attempts" do # rubocop:disable RSpec/ExampleLength
-        test_server.clear_requests
+      it "limits total retry attempts" do # rubocop:disable RSpec/ExampleLength,RSpec/MultipleExpectations
+        expect { client.get("/error/503") }.to raise_error(Faraday::RetriableResponse)
 
-        # Make request that always fails
-        begin
-          client.get("/error/503")
-        rescue
-          nil
-        end
-
-        # Should be original + max retries
-        expect(test_server.requests.size).to be <= 3
+        expect(request_counts[:unavailable]).to be_between(1, 3).inclusive
       end
     end
   end

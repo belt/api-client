@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe ApiClient::Examples::UserEnricher do
+RSpec.describe ApiClient::Examples::UserEnricher, :experimental_ractor do
   it_behaves_like "canonical request flow example" do
     let(:example_class) { described_class }
     let(:invoke_method) { ->(c) { c.enrich(segment_id: "SEG-500") } }

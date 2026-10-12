@@ -468,7 +468,7 @@ API_CLIENT_LOG_BODIES=false
 - [architecture.md](architecture.md) — System architecture and design
 - [auth/jwt.md](auth/jwt.md) — JWT/JWKS documentation
 - [examples/README.md](../lib/api_client/examples/README.md) — Canonical RequestFlow examples (4×4 adapter × processor matrix)
-- [test_server/README.md](../spec/support/test_server/README.md) — Integration test server (Falcon-based, real TCP)
+- [mock_api/README.md](../spec/support/mock_api/README.md) — In-process API fixtures and the no-TCP RSpec boundary
 - [Faraday](https://lostisland.github.io/faraday/)
 - [Stoplight](https://github.com/bolshakov/stoplight)
 - [StackProf](https://github.com/tmm1/stackprof)

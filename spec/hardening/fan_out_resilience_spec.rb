@@ -2,7 +2,7 @@ require "spec_helper"
 require "api_client"
 
 RSpec.describe ApiClient::Streaming::FanOutExecutor, :integration do
-  let(:client) { client_for_server }
+  let(:client) { client_for_mock_api }
 
   describe "failure strategy resilience" do
     it "skip strategy drops failed requests and returns successes" do
@@ -17,8 +17,11 @@ RSpec.describe ApiClient::Streaming::FanOutExecutor, :integration do
     end
 
     it "collect strategy raises error with partial results on transport failure" do
+      service_uri = "https://fan-out-failure.example.test"
+      stub_request(:get, "#{service_uri}/health")
+        .to_raise(Faraday::ConnectionFailed.new("simulated connection failure"))
       broken_client = ApiClient::TestClient.new(
-        service_uri: "http://127.0.0.1:1",
+        service_uri: service_uri,
         test_id: "fanout-collect",
         retry: {max: 0}
       )
@@ -26,21 +29,21 @@ RSpec.describe ApiClient::Streaming::FanOutExecutor, :integration do
       flow = broken_client.request_flow
         .fetch(:get, "/health")
 
-      # fetch itself will fail since the server is unreachable;
-      # RequestFlow wraps non-ApiClient errors in ApiClient::Error
       expect { flow.collect }.to raise_error(ApiClient::Error)
     end
 
     it "callback strategy invokes proc on failure" do
+      service_uri = "https://fan-out-callback.example.test"
+      stub_request(:get, "#{service_uri}/a")
+        .to_raise(Faraday::ConnectionFailed.new("simulated connection failure"))
       fallback_called = false
       on_fail = ->(_source, _req) {
         fallback_called = true
         nil
       }
 
-      # Use an unreachable host to trigger transport-level failures (status 0).
       broken_config = build(:api_client_configuration, :no_retry,
-        service_uri: "http://127.0.0.1:1")
+        service_uri: service_uri)
 
       batch = ApiClient::Orchestrators::Batch.new(broken_config)
       executor = described_class.new(
